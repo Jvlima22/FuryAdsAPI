@@ -1,0 +1,44 @@
+{
+  "name": "fury-ads-api",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "dev": "tsx watch src/utils/server.ts",
+    "build": "tsc",
+    "start": "node dist/utils/server.js",
+    "lint": "eslint src",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Jvlima22/FuryAdsAPI.git"
+  },
+  "bugs": {
+    "url": "https://github.com/Jvlima22/FuryAdsAPI/issues"
+  },
+  "homepage": "https://github.com/Jvlima22/FuryAdsAPI#readme",
+  "dependencies": {
+    "bullmq": "^5.77.0",
+    "dotenv": "^17.4.2",
+    "express": "^5.2.1",
+    "ioredis": "^5.10.1",
+    "zod": "^4.4.3"
+  },
+  "devDependencies": {
+    "@eslint/js": "^10.0.1",
+    "@types/express": "^5.0.6",
+    "@types/node": "^25.9.1",
+    "eslint": "^10.4.0",
+    "eslint-config-prettier": "^10.1.8",
+    "prettier": "^3.8.3",
+    "rimraf": "^6.1.3",
+    "tsx": "^4.22.3",
+    "typescript": "^6.0.3",
+    "typescript-eslint": "^8.59.4"
+  }
+}
