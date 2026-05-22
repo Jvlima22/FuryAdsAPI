@@ -152,7 +152,7 @@ Worker "takedown" iniciado — alvo HTTP: https://jsonplaceholder.typicode.com/p
 
 **Imagem do teste:**
 
-![Teste 3 — GET /jobs/:id (completed)](https://res.cloudinary.com/ditlmzgrh/image/upload/v1779475106/teste_3_ilz7i9.png)
+![Teste 3 — GET /jobs/:id (completed)](https://res.cloudinary.com/ditlmzgrh/image/upload/v1779479003/teste_3_o1isls.png)
 
 ---
 
@@ -465,15 +465,15 @@ A mensagem de erro final será: `Timeout (2000ms) ao chamar https://httpbin.org/
 
 **Imagens do teste:**
 
-![Teste 10 — visão geral](https://res.cloudinary.com/ditlmzgrh/image/upload/v1779475104/teste_10_f16w7p.png)
+![Teste 10 — visão geral (POST → 202)](https://res.cloudinary.com/ditlmzgrh/image/upload/v1779479187/teste_10_lyaqhh.png)
 
-![Teste 10.1 — configuração do .env](https://res.cloudinary.com/ditlmzgrh/image/upload/v1779475104/teste_10.1_phipig.png)
+![Teste 10.2 — POST disparando o job](https://res.cloudinary.com/ditlmzgrh/image/upload/v1779479382/teste_10.2_ugyx9y.png)
 
-![Teste 10.2 — POST disparando o job](https://res.cloudinary.com/ditlmzgrh/image/upload/v1779475104/teste_10.2_hgrry9.png)
+![Teste 10.3 — GET /jobs/:id (failed, attempts: 3, error: fetch failed)](https://res.cloudinary.com/ditlmzgrh/image/upload/v1779475104/teste_10.2_hgrry9.png)
 
-![Teste 10.3 — GET /jobs/:id (failed, attempts: 3)](https://res.cloudinary.com/ditlmzgrh/image/upload/v1779476648/teste_10.3_xill5n.png)
+![Teste 10 — log do worker (3 tentativas, fetch failed)](https://res.cloudinary.com/ditlmzgrh/image/upload/v1779475104/teste_10.1_phipig.png)
 
-![Teste 10.4 — extra](https://res.cloudinary.com/ditlmzgrh/image/upload/v1779476648/teste_10.4_eqlvm2.png)
+![Teste 10 — variante de timeout (3 tentativas com Timeout 2000ms)](https://res.cloudinary.com/ditlmzgrh/image/upload/v1779476648/teste_10.3_xill5n.png)
 
 ---
 
