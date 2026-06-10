@@ -2,16 +2,13 @@ import { Queue } from 'bullmq';
 import { env } from '../config/env';
 import { redisConnection } from './redis';
 import { ViolationPayload } from '../schemas/violation.schema';
+import { TakedownResult } from '../platforms';
 
 export const TAKEDOWN_QUEUE_NAME = 'takedown';
 
 export type TakedownJobData = ViolationPayload;
 
-export interface TakedownJobResult {
-  status: number;
-  url: string;
-  durationMs: number;
-}
+export type TakedownJobResult = TakedownResult;
 
 export const takedownQueue = new Queue<TakedownJobData, TakedownJobResult>(
   TAKEDOWN_QUEUE_NAME,

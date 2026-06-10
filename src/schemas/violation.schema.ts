@@ -1,5 +1,11 @@
 import { z } from 'zod';
 
+export const platformSchema = z.enum([
+  'GOOGLE_ADS',
+  'META_ADS',
+  // Novas plataformas entram aqui — o adapter correspondente deve existir em src/platforms/.
+]);
+
 export const violationTypeSchema = z.enum([
   'PROHIBITED_TERM',
   'BRAND_VIOLATION',
@@ -11,6 +17,7 @@ export const severitySchema = z.enum(['LOW', 'MEDIUM', 'HIGH', 'CRITICAL']);
 export const violationPayloadSchema = z.object({
   adId: z.string().min(1, 'adId é obrigatório'),
   tenantId: z.string().min(1, 'tenantId é obrigatório'),
+  platform: platformSchema,
   violationType: violationTypeSchema,
   severity: severitySchema,
   detectedAt: z.iso.datetime(),
@@ -19,3 +26,4 @@ export const violationPayloadSchema = z.object({
 export type ViolationPayload = z.infer<typeof violationPayloadSchema>;
 export type ViolationType = z.infer<typeof violationTypeSchema>;
 export type Severity = z.infer<typeof severitySchema>;
+export type Platform = z.infer<typeof platformSchema>;

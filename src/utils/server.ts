@@ -23,7 +23,7 @@ const worker = startTakedownWorker();
 
 const server = app.listen(env.PORT, () => {
   console.log(`API rodando na porta ${env.PORT} [${env.NODE_ENV}]`);
-  console.log(`Worker "takedown" iniciado — alvo HTTP: ${env.TAKEDOWN_TARGET_URL}`);
+  console.log(`Worker "takedown" iniciado — plataformas: GOOGLE_ADS, META_ADS`);
 });
 
 async function shutdown(signal: string): Promise<void> {

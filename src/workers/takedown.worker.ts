@@ -2,59 +2,58 @@ import { Worker, Job } from 'bullmq';
 import { env } from '../config/env';
 import { redisConnection } from '../queues/redis';
 import { releaseLock } from '../queues/idempotency';
+import { getPlatformAdapter } from '../platforms';
 import {
   TAKEDOWN_QUEUE_NAME,
   TakedownJobData,
   TakedownJobResult,
 } from '../queues/takedown.queue';
 
+/**
+ * Garante que a chamada ao adapter não pendure o worker além do timeout.
+ * Os SDKs de plataforma têm seus próprios timeouts internos, mas blindamos aqui
+ * para que qualquer travamento vire um erro retentável pelo BullMQ.
+ */
+function withTimeout<T>(promise: Promise<T>, ms: number): Promise<T> {
+  return new Promise<T>((resolve, reject) => {
+    const timer = setTimeout(
+      () => reject(new Error(`Timeout (${ms}ms) ao executar takedown`)),
+      ms,
+    );
+    promise.then(
+      (value) => {
+        clearTimeout(timer);
+        resolve(value);
+      },
+      (err) => {
+        clearTimeout(timer);
+        reject(err);
+      },
+    );
+  });
+}
+
 async function processTakedown(
   job: Job<TakedownJobData, TakedownJobResult>,
 ): Promise<TakedownJobResult> {
-  const { adId, tenantId, violationType, severity } = job.data;
+  const { adId, tenantId, platform, violationType, severity } = job.data;
   console.log(
     `[worker] takedown attempt=${job.attemptsMade + 1}/${job.opts.attempts} ` +
-      `tenant=${tenantId} ad=${adId} type=${violationType} severity=${severity}`,
+      `platform=${platform} tenant=${tenantId} ad=${adId} type=${violationType} severity=${severity}`,
   );
 
-  const controller = new AbortController();
-  const timeout = setTimeout(
-    () => controller.abort(),
+  // Seleciona a estratégia da plataforma (Strategy Pattern) e delega.
+  // Qualquer exceção lançada aqui aciona o retry/backoff do BullMQ.
+  const adapter = getPlatformAdapter(platform);
+  const result = await withTimeout(
+    adapter.performTakedown(job.data),
     env.TAKEDOWN_HTTP_TIMEOUT_MS,
   );
 
-  const startedAt = Date.now();
-  try {
-    const response = await fetch(env.TAKEDOWN_TARGET_URL, {
-      method: 'GET',
-      signal: controller.signal,
-    });
-
-    if (!response.ok) {
-      throw new Error(
-        `HTTP ${response.status} ao chamar ${env.TAKEDOWN_TARGET_URL}`,
-      );
-    }
-
-    // consome o body para liberar o socket (não usamos o conteúdo)
-    await response.text();
-
-    return {
-      status: response.status,
-      url: env.TAKEDOWN_TARGET_URL,
-      durationMs: Date.now() - startedAt,
-    };
-  } catch (err) {
-    if (err instanceof Error && err.name === 'AbortError') {
-      throw new Error(
-        `Timeout (${env.TAKEDOWN_HTTP_TIMEOUT_MS}ms) ao chamar ${env.TAKEDOWN_TARGET_URL}`,
-        { cause: err },
-      );
-    }
-    throw err;
-  } finally {
-    clearTimeout(timeout);
-  }
+  console.log(
+    `[worker] takedown ok platform=${platform} action=${result.action} resource=${result.resource}`,
+  );
+  return result;
 }
 
 export function startTakedownWorker(): Worker<TakedownJobData, TakedownJobResult> {
@@ -66,7 +65,7 @@ export function startTakedownWorker(): Worker<TakedownJobData, TakedownJobResult
 
   worker.on('completed', async (job, result) => {
     console.log(
-      `[worker] completed job=${job.id} status=${result.status} duration=${result.durationMs}ms`,
+      `[worker] completed job=${job.id} platform=${result.platform} action=${result.action} duration=${result.durationMs}ms`,
     );
     if (job.id) await releaseLock(job.id);
   });
