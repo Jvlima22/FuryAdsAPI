@@ -1,0 +1,311 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Fury Ads — System Architecture</title>
+<style>
+  :root {
+    --ink: #1a2233;
+    --muted: #5b6678;
+    --line: #c7d0dd;
+    --api: #2563eb;
+    --queue: #7c3aed;
+    --adapter: #0891b2;
+    --google: #ea4335;
+    --ext: #475569;
+    --bg-api: #eff4ff;
+    --bg-queue: #f4efff;
+    --bg-adapter: #e8f8fb;
+    --bg-google: #fdeceb;
+    --bg-ext: #f1f4f8;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    color: var(--ink);
+    background: #fff;
+    -webkit-font-smoothing: antialiased;
+  }
+  .sheet {
+    width: 1040px;
+    margin: 0 auto;
+    padding: 40px 48px 48px;
+  }
+  header h1 {
+    margin: 0 0 4px;
+    font-size: 22px;
+    letter-spacing: -0.01em;
+  }
+  header p {
+    margin: 0;
+    color: var(--muted);
+    font-size: 13px;
+  }
+  .legend {
+    display: flex;
+    gap: 18px;
+    flex-wrap: wrap;
+    margin: 18px 0 26px;
+    font-size: 12px;
+    color: var(--muted);
+  }
+  .legend span { display: inline-flex; align-items: center; gap: 6px; }
+  .dot { width: 11px; height: 11px; border-radius: 3px; display: inline-block; }
+
+  .flow {
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    padding: 22px 24px 26px;
+    margin-bottom: 26px;
+    background: #fcfdff;
+  }
+  .flow-title {
+    font-size: 13px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--muted);
+    margin: 0 0 18px;
+  }
+  .flow-title b { color: var(--ink); }
+
+  .row {
+    display: flex;
+    align-items: stretch;
+    gap: 0;
+    flex-wrap: nowrap;
+  }
+  .node {
+    flex: 1 1 0;
+    min-width: 0;
+    border: 1.5px solid var(--line);
+    border-radius: 12px;
+    padding: 14px 14px;
+    background: #fff;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    text-align: center;
+  }
+  .node .kind {
+    font-size: 10.5px;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--muted);
+    margin-bottom: 5px;
+  }
+  .node .name { font-size: 14.5px; font-weight: 650; line-height: 1.25; }
+  .node .tech { font-size: 11.5px; color: var(--muted); margin-top: 4px; }
+
+  .n-ext { border-color: #cbd5e1; background: var(--bg-ext); }
+  .n-api { border-color: var(--api); background: var(--bg-api); }
+  .n-queue { border-color: var(--queue); background: var(--bg-queue); }
+  .n-adapter { border-color: var(--adapter); background: var(--bg-adapter); }
+  .n-google { border-color: var(--google); background: var(--bg-google); }
+
+  .arrow {
+    flex: 0 0 86px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 0 2px;
+  }
+  .arrow .label {
+    font-size: 10.5px;
+    color: var(--muted);
+    text-align: center;
+    line-height: 1.3;
+    margin-bottom: 4px;
+    font-family: ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
+  }
+  .arrow .line {
+    width: 100%;
+    height: 2px;
+    background: var(--line);
+    position: relative;
+  }
+  .arrow .line::after {
+    content: "";
+    position: absolute;
+    right: -1px;
+    top: 50%;
+    transform: translateY(-50%);
+    border-left: 8px solid var(--line);
+    border-top: 5px solid transparent;
+    border-bottom: 5px solid transparent;
+  }
+
+  .components {
+    margin-top: 4px;
+    border-top: 1px dashed var(--line);
+    padding-top: 18px;
+  }
+  .components h2 {
+    font-size: 13px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--muted);
+    margin: 0 0 14px;
+  }
+  .comp-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }
+  .comp {
+    border: 1.5px solid var(--line);
+    border-left-width: 5px;
+    border-radius: 10px;
+    padding: 13px 15px;
+    background: #fff;
+  }
+  .comp h3 { margin: 0 0 5px; font-size: 14px; }
+  .comp p { margin: 0; font-size: 12px; color: var(--muted); line-height: 1.45; }
+  .c-api { border-left-color: var(--api); }
+  .c-queue { border-left-color: var(--queue); }
+  .c-adapter { border-left-color: var(--adapter); }
+
+  footer {
+    margin-top: 26px;
+    font-size: 11px;
+    color: var(--muted);
+    text-align: center;
+  }
+</style>
+</head>
+<body>
+  <div class="sheet">
+    <header>
+      <h1>Fury Ads — System Architecture</h1>
+      <p>TGL Solutions · internal own-use tool · Manager account (MCC) 864-652-2223</p>
+    </header>
+
+    <div class="legend">
+      <span><i class="dot" style="background:var(--ext)"></i> Internal (own) systems</span>
+      <span><i class="dot" style="background:var(--api)"></i> REST API</span>
+      <span><i class="dot" style="background:var(--queue)"></i> Job queue</span>
+      <span><i class="dot" style="background:var(--adapter)"></i> Google Ads adapter</span>
+      <span><i class="dot" style="background:var(--google)"></i> Google Ads API</span>
+    </div>
+
+    <!-- WRITE FLOW -->
+    <section class="flow">
+      <p class="flow-title">Compliance flow <b>(write)</b> — pause a violating ad, asynchronously</p>
+      <div class="row">
+        <div class="node n-ext">
+          <span class="kind">Source</span>
+          <span class="name">Internal detection system</span>
+          <span class="tech">flags ad-content violations</span>
+        </div>
+        <div class="arrow">
+          <span class="label">POST<br/>/webhook/<br/>violation</span>
+          <span class="line"></span>
+        </div>
+        <div class="node n-api">
+          <span class="kind">Component 1</span>
+          <span class="name">REST API</span>
+          <span class="tech">Node.js + Express</span>
+        </div>
+        <div class="arrow">
+          <span class="label">enqueue<br/>job</span>
+          <span class="line"></span>
+        </div>
+        <div class="node n-queue">
+          <span class="kind">Component 2</span>
+          <span class="name">Job queue</span>
+          <span class="tech">BullMQ + Redis</span>
+        </div>
+        <div class="arrow">
+          <span class="label">process</span>
+          <span class="line"></span>
+        </div>
+        <div class="node n-adapter">
+          <span class="kind">Component 3</span>
+          <span class="name">Google Ads adapter</span>
+          <span class="tech">AdGroupAdService.mutate</span>
+        </div>
+        <div class="arrow">
+          <span class="label">pause ad<br/>(PAUSED)</span>
+          <span class="line"></span>
+        </div>
+        <div class="node n-google">
+          <span class="kind">External</span>
+          <span class="name">Google Ads API</span>
+          <span class="tech">our own accounts</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- READ FLOW -->
+    <section class="flow">
+      <p class="flow-title">Reporting flow <b>(read)</b> — read campaign metrics, synchronously</p>
+      <div class="row">
+        <div class="node n-ext">
+          <span class="kind">Source</span>
+          <span class="name">Internal dashboard</span>
+          <span class="tech">operations / marketing</span>
+        </div>
+        <div class="arrow">
+          <span class="label">GET<br/>/metrics/<br/>google-ads</span>
+          <span class="line"></span>
+        </div>
+        <div class="node n-api">
+          <span class="kind">Component 1</span>
+          <span class="name">REST API</span>
+          <span class="tech">Node.js + Express</span>
+        </div>
+        <div class="arrow">
+          <span class="label">read<br/>metrics</span>
+          <span class="line"></span>
+        </div>
+        <div class="node n-adapter">
+          <span class="kind">Component 3</span>
+          <span class="name">Google Ads adapter</span>
+          <span class="tech">GoogleAdsService.Search</span>
+        </div>
+        <div class="arrow">
+          <span class="label">GAQL<br/>search</span>
+          <span class="line"></span>
+        </div>
+        <div class="node n-google">
+          <span class="kind">External</span>
+          <span class="name">Google Ads API</span>
+          <span class="tech">our own accounts</span>
+        </div>
+        <div class="arrow">
+          <span class="label">JSON<br/>metrics</span>
+          <span class="line" style="background:var(--adapter)"></span>
+        </div>
+        <div class="node n-ext">
+          <span class="kind">Result</span>
+          <span class="name">Aggregated JSON</span>
+          <span class="tech">per-campaign metrics</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- COMPONENTS -->
+    <section class="components">
+      <h2>The three components</h2>
+      <div class="comp-grid">
+        <div class="comp c-api">
+          <h3>REST API</h3>
+          <p>Node.js + Express. Receives compliance events (webhook) and serves reporting requests. No public access.</p>
+        </div>
+        <div class="comp c-queue">
+          <h3>Job queue</h3>
+          <p>BullMQ + Redis. Processes ad-pause actions asynchronously with idempotency (one job per tenant + ad) and exponential-backoff retries.</p>
+        </div>
+        <div class="comp c-adapter">
+          <h3>Google Ads adapter</h3>
+          <p>The only component that calls the Google Ads API. Selects the target account (customer_id) per request, scoped to accounts under our MCC.</p>
+        </div>
+      </div>
+    </section>
+
+    <footer>
+      Authentication to Google: a single OAuth 2.0 refresh token tied to our manager account, stored as an environment secret. No end-user Google credentials are collected.
+    </footer>
+  </div>
+</body>
+</html>
