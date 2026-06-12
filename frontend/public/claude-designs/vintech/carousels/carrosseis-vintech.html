@@ -1,0 +1,127 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<title>Vintech — Carrosséis (export Figma)</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+<!-- ext-resource-dependency: lifted image refs (used as strings in JSX) -->
+<meta name="ext-resource-dependency" content="../assets/vineyard.jpg" data-resource-id="vineyard" />
+<meta name="ext-resource-dependency" content="../assets/bottles.jpg" data-resource-id="bottles" />
+<meta name="ext-resource-dependency" content="../assets/wine_products.jpg" data-resource-id="wineProducts" />
+<meta name="ext-resource-dependency" content="../assets/enotourism.jpg" data-resource-id="enotourism" />
+<meta name="ext-resource-dependency" content="../assets/vineyard_aerial.jpg" data-resource-id="vineyardAerial" />
+<meta name="ext-resource-dependency" content="../assets/hero_winery.jpg" data-resource-id="heroWinery" />
+<meta name="ext-resource-dependency" content="../assets/hero-wine.jpg" data-resource-id="heroWine" />
+
+<link rel="stylesheet" href="../colors_and_type.css">
+
+<template id="__bundler_thumbnail" data-bg-color="hsl(350 70% 11%)">
+  <svg viewBox="0 0 1200 800" xmlns="http://www.w3.org/2000/svg">
+    <rect width="1200" height="800" fill="hsl(350 70% 11%)"/>
+    <circle cx="600" cy="360" r="150" fill="hsl(350 55% 22%)" stroke="hsl(43 53% 54%)" stroke-width="6"/>
+    <path d="M540 300 L600 410 L660 300" stroke="hsl(43 53% 54%)" stroke-width="10" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+    <circle cx="600" cy="388" r="16" fill="hsl(43 53% 54%)"/>
+    <text x="600" y="600" font-family="Space Grotesk, sans-serif" font-size="80" font-weight="700" fill="#fff" text-anchor="middle" letter-spacing="-2">Vin<tspan fill="hsl(43 53% 54%)">tech</tspan></text>
+    <text x="600" y="660" font-family="DM Sans, sans-serif" font-size="26" fill="hsl(43 60% 78%)" text-anchor="middle" letter-spacing="6">CARROSSÉIS · EXPORT</text>
+  </svg>
+</template>
+
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+
+<script>
+window.__resources = window.__resources || {};
+document.querySelectorAll('meta[name="ext-resource-dependency"]').forEach(function(m){
+  var id = m.getAttribute('data-resource-id');
+  if (id && !window.__resources[id]) window.__resources[id] = m.getAttribute('content');
+});
+</script>
+
+<script type="text/babel" src="carousel-components.jsx"></script>
+<script type="text/babel" src="carousel-slides.jsx"></script>
+<style>
+  html, body { margin: 0; padding: 0; background: hsl(30 20% 88%); }
+  #root { display: flex; flex-direction: column; align-items: stretch; gap: 48px; padding: 48px 0; }
+  .vt-group { display: flex; flex-direction: column; align-items: stretch; gap: 16px; }
+  .vt-group-title { font-family: 'Space Grotesk', sans-serif; font-weight: 700; font-size: 28px; color: hsl(350 55% 22%); letter-spacing: -0.01em; padding: 0 40px; }
+  /* Each carousel = one horizontal, scroll-snapping track (matches Claude Design). */
+  .vt-row { display: flex; flex-wrap: nowrap; gap: 24px; align-items: flex-start; overflow-x: auto; overflow-y: hidden; scroll-snap-type: x proximity; padding: 0 40px 18px; }
+  .vt-row::-webkit-scrollbar { height: 10px; }
+  .vt-row::-webkit-scrollbar-thumb { background: rgba(0,0,0,0.22); border-radius: 8px; }
+  .vt-row::-webkit-scrollbar-track { background: transparent; }
+  /* Native-size frame scaled down so several slides fit per track. */
+  .vt-frame { width: 1080px; height: 1350px; zoom: 0.3; overflow: hidden; box-shadow: 0 12px 48px -12px rgba(0,0,0,0.25); border-radius: 8px; flex-shrink: 0; scroll-snap-align: start; }
+</style>
+</head>
+<body>
+<div id="root"></div>
+<script type="text/babel">
+
+const W = 1080, H = 1350;
+
+const Frame = ({ name, children }) => (
+  <div className="vt-frame" data-figma-name={name}>{children}</div>
+);
+
+const Group = ({ title, children }) => (
+  <div className="vt-group">
+    <div className="vt-group-title">{title}</div>
+    <div className="vt-row">{children}</div>
+  </div>
+);
+
+function ExportAll() {
+  return (
+    <>
+      <Group title="Carrossel 1 — Apresentação da marca">
+        <Frame name="C1-1 Capa"><C1_Cover/></Frame>
+        <Frame name="C1-2 O que é"><C1_WhatIs/></Frame>
+        <Frame name="C1-3 5 módulos"><C1_Modules/></Frame>
+        <Frame name="C1-4 Stats"><C1_Stats/></Frame>
+        <Frame name="C1-5 Quote"><C1_Quote/></Frame>
+        <Frame name="C1-6 CTA"><C1_CTA/></Frame>
+      </Group>
+
+      <Group title="Carrossel 2 — 5 Módulos">
+        <Frame name="C2-1 Capa"><C2_Cover/></Frame>
+        <Frame name="C2-2 Produtos"><C2_Module idx={0}/></Frame>
+        <Frame name="C2-3 Enoturismo"><C2_Module idx={1}/></Frame>
+        <Frame name="C2-4 Vendas"><C2_Module idx={2}/></Frame>
+        <Frame name="C2-5 Equipe"><C2_Module idx={3}/></Frame>
+        <Frame name="C2-6 Analytics"><C2_Module idx={4}/></Frame>
+        <Frame name="C2-7 CTA"><C2_CTA/></Frame>
+      </Group>
+
+      <Group title="Carrossel 3 — Dashboard & Analytics">
+        <Frame name="C3-1 Capa"><C3_Cover/></Frame>
+        <Frame name="C3-2 KPIs"><C3_KPIs/></Frame>
+        <Frame name="C3-3 Receita"><C3_Revenue/></Frame>
+        <Frame name="C3-4 Canais"><C3_Channels/></Frame>
+        <Frame name="C3-5 CTA"><C3_CTA/></Frame>
+      </Group>
+
+      <Group title="Carrossel 4 — Planos & Preços">
+        <Frame name="C4-1 Capa"><C4_Cover/></Frame>
+        <Frame name="C4-2 Viticultura"><C4_Plan idx={0}/></Frame>
+        <Frame name="C4-3 Business"><C4_Plan idx={1}/></Frame>
+        <Frame name="C4-4 Sommelier"><C4_Plan idx={2}/></Frame>
+        <Frame name="C4-5 CTA"><C4_CTA/></Frame>
+      </Group>
+
+      <Group title="Carrossel 5 — 15 dias grátis">
+        <Frame name="C5-1 Capa"><C5_Cover/></Frame>
+        <Frame name="C5-2 Incluso"><C5_Included/></Frame>
+        <Frame name="C5-3 Demo 30min"><C5_Demo/></Frame>
+        <Frame name="C5-4 Social proof"><C5_Social/></Frame>
+        <Frame name="C5-5 CTA final"><C5_FinalCTA/></Frame>
+      </Group>
+    </>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById('root')).render(<ExportAll/>);
+</script>
+</body>
+</html>

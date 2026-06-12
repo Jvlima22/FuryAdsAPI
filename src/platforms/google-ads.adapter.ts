@@ -44,8 +44,15 @@ function getClient(): GoogleAdsApi {
   return client;
 }
 
-/** Monta o cliente de uma conta-cliente, validando o refresh token. */
-function buildCustomer(customerId: string) {
+/**
+ * Monta o cliente de uma conta-cliente, validando o refresh token.
+ *
+ * `withLogin=true` injeta o `login_customer_id` (a MCC do .env) — necessário
+ * quando a conta-alvo é filha dessa MCC. `withLogin=false` omite o header, o
+ * que é exigido por contas com acesso direto que NÃO estão sob essa MCC
+ * (passar a MCC nesses casos gera erro de permissão). Ver `withCustomer`.
+ */
+function buildCustomer(customerId: string, withLogin = true) {
   const { GOOGLE_ADS_REFRESH_TOKEN, GOOGLE_ADS_LOGIN_CUSTOMER_ID } = env;
   if (!GOOGLE_ADS_REFRESH_TOKEN) {
     throw new AppError('GOOGLE_ADS_REFRESH_TOKEN ausente.', 500);
@@ -60,8 +67,44 @@ function buildCustomer(customerId: string) {
   return getClient().Customer({
     customer_id: digits,
     refresh_token: GOOGLE_ADS_REFRESH_TOKEN,
-    login_customer_id: GOOGLE_ADS_LOGIN_CUSTOMER_ID,
+    ...(withLogin && GOOGLE_ADS_LOGIN_CUSTOMER_ID
+      ? { login_customer_id: GOOGLE_ADS_LOGIN_CUSTOMER_ID }
+      : {}),
   });
+}
+
+/**
+ * Heurística: a falha veio de passar um `login_customer_id` que não gerencia a
+ * conta-alvo? A API responde pedindo o header de login-customer-id / negando a
+ * permissão. Nesses casos vale reexecutar sem o header (acesso direto).
+ */
+function isLoginCustomerIdError(err: unknown): boolean {
+  const e = err as { errors?: Array<{ message?: string }>; message?: string };
+  const msg = (e.errors?.[0]?.message ?? e.message ?? '').toLowerCase();
+  return (
+    msg.includes('login-customer-id') || msg.includes("doesn't have permission")
+  );
+}
+
+/**
+ * Executa uma operação contra uma conta Google Ads tentando primeiro COM o
+ * `login_customer_id` (MCC) configurado — caminho correto para contas filhas da
+ * MCC. Se a conta não está sob essa MCC mas o refresh token tem acesso direto, a
+ * API recusa pedindo o login-customer-id; nesse caso reexecutamos SEM o header.
+ */
+async function withCustomer<T>(
+  customerId: string,
+  run: (customer: ReturnType<typeof buildCustomer>) => Promise<T>,
+): Promise<T> {
+  const hasLogin = Boolean(env.GOOGLE_ADS_LOGIN_CUSTOMER_ID);
+  try {
+    return await run(buildCustomer(customerId, true));
+  } catch (err) {
+    if (hasLogin && isLoginCustomerIdError(err)) {
+      return run(buildCustomer(customerId, false));
+    }
+    throw err;
+  }
 }
 
 /** Converte o enum numérico de status da campanha em string legível. */
@@ -109,14 +152,15 @@ export const googleAdsAdapter: PlatformAdapter & MetricsAdapter = {
     }
 
     const customerId = payload.tenantId.replace(/\D/g, '');
-    const customer = buildCustomer(customerId);
     const resourceName = ResourceNames.adGroupAd(customerId, adGroupId, adId);
 
     const startedAt = Date.now();
     try {
-      await customer.adGroupAds.update([
-        { resource_name: resourceName, status: enums.AdGroupAdStatus.PAUSED },
-      ]);
+      await withCustomer(customerId, (customer) =>
+        customer.adGroupAds.update([
+          { resource_name: resourceName, status: enums.AdGroupAdStatus.PAUSED },
+        ]),
+      );
     } catch (err) {
       throw toAppError(err);
     }
@@ -136,24 +180,24 @@ export const googleAdsAdapter: PlatformAdapter & MetricsAdapter = {
   async getCampaignMetrics(
     query: CampaignMetricsQuery,
   ): Promise<CampaignMetrics[]> {
-    const customer = buildCustomer(query.customerId);
-
     let rows;
     try {
-      rows = await customer.report({
-        entity: 'campaign',
-        attributes: ['campaign.id', 'campaign.name', 'campaign.status'],
-        metrics: [
-          'metrics.impressions',
-          'metrics.clicks',
-          'metrics.cost_micros',
-          'metrics.conversions',
-          'metrics.ctr',
-          'metrics.average_cpc',
-        ],
-        from_date: query.startDate,
-        to_date: query.endDate,
-      });
+      rows = await withCustomer(query.customerId, (customer) =>
+        customer.report({
+          entity: 'campaign',
+          attributes: ['campaign.id', 'campaign.name', 'campaign.status'],
+          metrics: [
+            'metrics.impressions',
+            'metrics.clicks',
+            'metrics.cost_micros',
+            'metrics.conversions',
+            'metrics.ctr',
+            'metrics.average_cpc',
+          ],
+          from_date: query.startDate,
+          to_date: query.endDate,
+        }),
+      );
     } catch (err) {
       throw toAppError(err);
     }

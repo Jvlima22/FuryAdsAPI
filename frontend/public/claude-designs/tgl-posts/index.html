@@ -1,0 +1,106 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>TGL Solutions · Posts Instagram</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600;9..40,700&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="styles.css" />
+
+<script>
+  // Brand assets recriados como SVG inline (logos) + placeholder p/ as
+  // screenshots de produto (que truncam no canal DesignSync, >192KiB).
+  function tglLogo(stroke, text) {
+    var svg = "<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 190 44'>"
+      + "<g fill='none' stroke='" + stroke + "' stroke-width='4'>"
+      + "<circle cx='22' cy='22' r='8'/><circle cx='22' cy='22' r='14'/><circle cx='22' cy='22' r='20'/></g>"
+      + "<circle cx='22' cy='22' r='3.5' fill='" + stroke + "'/>"
+      + "<text x='52' y='30' font-family='Space Grotesk, sans-serif' font-weight='700' font-size='24' fill='" + text + "'>TGL</text></svg>";
+    return "data:image/svg+xml," + encodeURIComponent(svg);
+  }
+  var shot = "data:image/svg+xml," + encodeURIComponent(
+    "<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 320 300'>"
+    + "<rect width='320' height='300' rx='10' fill='#eef0f3'/>"
+    + "<rect x='115' y='110' width='90' height='66' rx='8' fill='none' stroke='#aab2c0' stroke-width='3'/>"
+    + "<circle cx='160' cy='138' r='10' fill='none' stroke='#aab2c0' stroke-width='3'/>"
+    + "<text x='160' y='205' font-family='sans-serif' font-size='13' fill='#9aa3b2' text-anchor='middle'>screenshot</text></svg>");
+
+  window.__resources = {
+    tglLogo: tglLogo('#0F6CBD', '#041020'),       // sobre fundo claro
+    tglLogoNavy: tglLogo('#2dd4ff', '#ffffff'),    // sobre fundo navy/escuro
+    tglLogoGradient: tglLogo('#ffffff', '#ffffff'),// sobre fundo gradiente
+    shotTlsBarber: shot,
+    shotVintech: shot,
+    shotCaptu: shot,
+  };
+</script>
+
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" crossorigin="anonymous"></script>
+
+<script type="text/babel" src="primitives.jsx"></script>
+<script type="text/babel" src="posts.jsx"></script>
+<script type="text/babel" src="carousels.jsx"></script>
+<script type="text/babel" src="presentation.jsx"></script>
+<script type="text/babel" src="reels.jsx"></script>
+
+<style>
+  html, body { margin: 0; padding: 0; background: #e7e3db; font-family: 'DM Sans', sans-serif; }
+  #root { display: flex; flex-direction: column; align-items: stretch; gap: 56px; padding: 56px 0; }
+  .vt-group { display: flex; flex-direction: column; align-items: stretch; gap: 16px; }
+  .vt-group-title { font-family: 'Space Grotesk', sans-serif; font-weight: 700; font-size: 30px; color: #041020; letter-spacing: -0.01em; padding: 0 44px; }
+  .vt-row { display: flex; flex-wrap: nowrap; gap: 28px; align-items: flex-start; overflow-x: auto; overflow-y: hidden; scroll-snap-type: x proximity; padding: 0 44px 18px; }
+  .vt-row::-webkit-scrollbar { height: 10px; }
+  .vt-row::-webkit-scrollbar-thumb { background: rgba(0,0,0,0.22); border-radius: 8px; }
+  .vt-row::-webkit-scrollbar-track { background: transparent; }
+  .vt-frame { zoom: 0.3; overflow: hidden; box-shadow: 0 14px 48px -14px rgba(0,0,0,0.28); border-radius: 8px; flex-shrink: 0; background: #fff; scroll-snap-align: start; }
+</style>
+</head>
+<body>
+<div id="root"></div>
+<script type="text/babel">
+  const W = window;
+  const POST = [1080, 1350];
+  const REEL = [1500, 1920];
+  const STORY = [1080, 1920];
+
+  const Frame = ({ size, name }) => (
+    <div className="vt-frame" style={{ width: size[0], height: size[1] }} data-name={name}>
+      {React.createElement(W[name])}
+    </div>
+  );
+
+  const Group = ({ title, names, size }) => (
+    <div className="vt-group">
+      <div className="vt-group-title">{title}</div>
+      <div className="vt-row">
+        {names.map((n) => <Frame key={n} size={size} name={n} />)}
+      </div>
+    </div>
+  );
+
+  function App() {
+    return (
+      <>
+        <Group title="Apresentação · Posts unitários" size={POST} names={['PostP1', 'PostP2', 'PostP3']} />
+        <Group title="Apresentação · Carrossel E — Conheça a TGL" size={POST} names={['E1', 'E2', 'E3', 'E4', 'E5', 'E6', 'E7']} />
+        <Group title="Apresentação · Carrossel F — O que entregamos" size={POST} names={['F1', 'F2', 'F3', 'F4', 'F5', 'F6']} />
+        <Group title="Posts unitários" size={POST} names={['Post1', 'Post2', 'Post3', 'Post4', 'Post5', 'Post6', 'Post7']} />
+        <Group title="Carrossel A — Preço secreto da planilha" size={POST} names={['A1', 'A2', 'A3', 'A4', 'A5', 'A6']} />
+        <Group title="Carrossel B — Sua ideia vira um SaaS?" size={POST} names={['B1', 'B2', 'B3', 'B4', 'B5', 'B6', 'B7']} />
+        <Group title="Carrossel C — 5 processos pra automatizar" size={POST} names={['C1', 'C2', 'C3', 'C4', 'C5', 'C6', 'C7']} />
+        <Group title="Carrossel D — Bastidores (TLS · Captu · Vintech)" size={POST} names={['D1', 'D2', 'D3', 'D4', 'D5', 'D6']} />
+        <Group title="Reels — Storyboards" size={REEL} names={['Reel1', 'Reel2', 'Reel3', 'Reel4', 'Reel5', 'Reel6']} />
+        <Group title="Stories — Sequência" size={STORY} names={['Story1', 'Story2', 'Story3', 'Story4']} />
+      </>
+    );
+  }
+
+  ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+</script>
+</body>
+</html>

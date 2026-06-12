@@ -1,0 +1,159 @@
+/* =========================================================
+   VINTECH — Design Tokens
+   Bordô profundo + Dourado · Da vindima à última taça
+   ========================================================= */
+
+@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=DM+Sans:wght@400;500;600;700&display=swap');
+
+:root {
+  /* ----- Color · Foundations (raw HSL) ----- */
+  --vt-bordo-deep:    350 70% 11%;   /* @kind color */ /* darkest wine, sidebar bg */
+  --vt-bordo:         350 55% 22%;   /* @kind color */ /* primary brand */
+  --vt-bordo-glow:    350 55% 35%;   /* @kind color */ /* primary hover/glow */
+  --vt-gold:           43 53% 54%;   /* @kind color */ /* dourado */
+  --vt-gold-soft:      43 60% 78%;   /* @kind color */ /* dourado claro, sublines */
+  --vt-cream:          30 33% 96%;   /* @kind color */ /* background quente */
+  --vt-cream-deep:     30 25% 90%;   /* @kind color */ /* secondary surface */
+  --vt-muted:          30 20% 92%;   /* @kind color */
+  --vt-ink:           350 60% 8%;    /* @kind color */ /* foreground */
+  --vt-ink-soft:      350 10% 38%;   /* @kind color */ /* muted-foreground */
+  --vt-border:         30 20% 85%;   /* @kind color */
+  --vt-success:       142 50% 35%;   /* @kind color */
+  --vt-danger:          0 70% 42%;   /* @kind color */
+
+  /* ----- Semantic surface tokens ----- */
+  --background:          hsl(var(--vt-cream));
+  --foreground:          hsl(var(--vt-ink));
+  --card:                #ffffff;
+  --card-foreground:     hsl(var(--vt-ink));
+  --primary:             hsl(var(--vt-bordo));
+  --primary-deep:        hsl(var(--vt-bordo-deep));
+  --primary-glow:        hsl(var(--vt-bordo-glow));
+  --primary-foreground:  hsl(var(--vt-cream));
+  --gold:                hsl(var(--vt-gold));
+  --gold-soft:           hsl(var(--vt-gold-soft));
+  --gold-foreground:     hsl(var(--vt-bordo-deep));
+  --secondary:           hsl(var(--vt-cream-deep));
+  --muted:               hsl(var(--vt-muted));
+  --muted-foreground:    hsl(var(--vt-ink-soft));
+  --border:              hsl(var(--vt-border));
+  --success:             hsl(var(--vt-success));
+  --destructive:         hsl(var(--vt-danger));
+
+  /* Sidebar (always dark wine) */
+  --sidebar:             hsl(350 65% 9%);
+  --sidebar-foreground:  hsl(30 25% 88%);
+  --sidebar-border:      hsl(350 40% 18%);
+  --sidebar-accent:      hsl(350 50% 16%);
+
+  /* ----- Gradients ----- */
+  --gradient-wine:    linear-gradient(135deg, hsl(350 70% 11%) 0%, hsl(350 55% 22%) 50%, hsl(350 60% 28%) 100%); /* @kind color */
+  --gradient-gold:    linear-gradient(135deg, hsl(43 60% 65%) 0%, hsl(43 53% 54%) 50%, hsl(38 55% 42%) 100%); /* @kind color */
+  --gradient-overlay: linear-gradient(180deg, hsl(350 70% 8% / 0.2) 0%, hsl(350 70% 8% / 0.85) 100%); /* @kind color */
+  --gradient-radial:  radial-gradient(ellipse at top, hsl(350 55% 22% / 0.4), transparent 60%); /* @kind color */
+
+  /* ----- Elevation ----- */
+  --shadow-card:    0 1px 3px hsl(350 30% 15% / 0.04), 0 8px 24px -8px hsl(350 30% 15% / 0.08);
+  --shadow-elegant: 0 20px 60px -20px hsl(350 70% 11% / 0.35);
+  --shadow-gold:    0 10px 40px -10px hsl(43 53% 54% / 0.4);
+
+  /* ----- Radii ----- */
+  --radius-sm: 0.5rem;   /* 8px  — small (chips, badges) */
+  --radius-md: 0.625rem; /* 10px — inputs, buttons */
+  --radius:    0.75rem;  /* 12px — base */
+  --radius-lg: 1rem;     /* 16px — cards */
+  --radius-xl: 1.25rem;  /* 20px — feature cards */
+  --radius-2xl:1.5rem;   /* 24px — large hero cards */
+
+  /* ----- Spacing scale (4-pt) ----- */
+  --space-1: 0.25rem;  /* 4  */
+  --space-2: 0.5rem;   /* 8  */
+  --space-3: 0.75rem;  /* 12 */
+  --space-4: 1rem;     /* 16 */
+  --space-5: 1.25rem;  /* 20 */
+  --space-6: 1.5rem;   /* 24 */
+  --space-8: 2rem;     /* 32 */
+  --space-10: 2.5rem;  /* 40 */
+  --space-12: 3rem;    /* 48 */
+  --space-16: 4rem;    /* 64 */
+  --space-20: 5rem;    /* 80 */
+  --space-24: 6rem;    /* 96 */
+  --space-32: 8rem;    /* 128 */
+
+  /* ----- Motion ----- */
+  --ease-smooth: cubic-bezier(0.4, 0, 0.2, 1); /* @kind other */
+  --dur-fast:   180ms; /* @kind other */
+  --dur-base:   300ms; /* @kind other */
+  --dur-slow:   600ms; /* @kind other */
+
+  /* ----- Typography families ----- */
+  --font-display: 'Space Grotesk', system-ui, sans-serif;
+  --font-sans:    'DM Sans', system-ui, sans-serif;
+  --font-mono:    ui-monospace, 'SF Mono', Menlo, monospace;
+
+  /* ----- Type scale ----- */
+  --fs-xs:   0.75rem;   /* 12 — overline, captions */
+  --fs-sm:   0.875rem;  /* 14 — small body */
+  --fs-base: 1rem;      /* 16 — body */
+  --fs-lg:   1.125rem;  /* 18 — large body */
+  --fs-xl:   1.25rem;   /* 20 — small h */
+  --fs-2xl:  1.5rem;    /* 24 — h4 */
+  --fs-3xl:  1.875rem;  /* 30 — h3 */
+  --fs-4xl:  2.25rem;   /* 36 — h2 */
+  --fs-5xl:  3rem;      /* 48 — h1 small */
+  --fs-6xl:  3.75rem;   /* 60 — hero */
+  --fs-7xl:  4.5rem;    /* 72 — display */
+  --fs-8xl:  6rem;      /* 96 — mega */
+}
+
+/* =========================================================
+   Semantic typography utilities
+   ========================================================= */
+
+body {
+  font-family: var(--font-sans);
+  color: var(--foreground);
+  background: var(--background);
+  font-feature-settings: "ss01", "cv11";
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+.vt-h1, .vt-h2, .vt-h3, .vt-h4, .vt-h5 {
+  font-family: var(--font-display);
+  letter-spacing: -0.02em;
+  font-weight: 700;
+  color: var(--foreground);
+  line-height: 1.1;
+  text-wrap: balance;
+}
+.vt-h1 { font-size: clamp(2.5rem, 5vw, var(--fs-7xl)); line-height: 1.05; }
+.vt-h2 { font-size: clamp(2rem, 4vw, var(--fs-5xl)); }
+.vt-h3 { font-size: var(--fs-3xl); }
+.vt-h4 { font-size: var(--fs-2xl); }
+.vt-h5 { font-size: var(--fs-xl); }
+
+.vt-overline {
+  font-family: var(--font-display);
+  font-size: var(--fs-xs);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.25em;
+  color: var(--primary);
+}
+.vt-overline--gold { color: var(--gold); }
+
+.vt-p     { font-size: var(--fs-base); line-height: 1.65; color: var(--foreground); }
+.vt-lead  { font-size: var(--fs-lg);   line-height: 1.55; color: var(--muted-foreground); }
+.vt-small { font-size: var(--fs-sm);   line-height: 1.55; color: var(--muted-foreground); }
+.vt-caption { font-size: var(--fs-xs); color: var(--muted-foreground); }
+.vt-mono  { font-family: var(--font-mono); font-size: 0.85em; }
+
+/* Italic-accent used for tagline phrases in headers */
+.vt-italic-accent {
+  font-style: italic;
+  color: var(--gold);
+}
+
+/* Inline gold word in display headings */
+.vt-display-gold { color: var(--gold); }

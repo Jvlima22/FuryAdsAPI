@@ -1,0 +1,62 @@
+# Fluxo de Processos: Gestão Autônoma de Ads com IA
+
+Este documento descreve o fluxo de ponta a ponta de como o sistema operará no dia a dia, desde a captura de dados até a execução de ações autônomas.
+
+## 1. O Ciclo de Operação (Loop Infinito)
+
+O sistema funciona em um ciclo contínuo de 4 etapas: **Monitoramento**, **Análise**, **Decisão** e **Execução**.
+
+---
+
+### Etapa 1: Monitoramento e Coleta (O "Ouvido" do Sistema)
+O sistema coleta dados de duas fontes principais:
+*   **Google/Meta Ads API:** A cada hora (ou intervalo definido), o sistema busca métricas de performance (Impressões, Cliques, Conversões, ROAS, CPA).
+*   **GTM Server-side:** Em tempo real, o sistema recebe eventos de conversão e comportamento do usuário diretamente do seu servidor, garantindo que os dados não sejam perdidos por adblockers.
+
+> **Resultado:** Uma base de dados (BigQuery) sempre atualizada e ultra-precisa.
+
+---
+
+### Etapa 2: Análise e Identificação (O "Cérebro" Analítico)
+A IA processa os dados coletados para encontrar padrões:
+*   **Detecção de Anomalias:** "Este anúncio parou de converter subitamente nas últimas 3 horas."
+*   **Identificação de Gargalos:** "O CTR está alto, mas a taxa de conversão na landing page caiu 20%."
+*   **Análise de Testes A/B:** "A Variante B tem 95% de probabilidade estatística de ser melhor que a Variante A."
+
+---
+
+### Etapa 3: Decisão e Estratégia (O "Estrategista" IA)
+Com base na análise, os **Agentes de IA** (como o CrewAI) tomam decisões:
+*   **Otimização de Lances:** "Vou aumentar o lance em 10% para o público X, pois o ROAS está acima da meta."
+*   **Pausa de Anúncios:** "Vou pausar o anúncio Y porque ele gastou 2x o CPA alvo sem conversões."
+*   **Sugestão de Criativo:** "Sugiro criar um novo banner com foco em 'Escassez', pois os dados mostram que este gatilho está funcionando melhor agora."
+
+---
+
+### Etapa 4: Execução e Takedown (O "Braço" Executor)
+Aqui entra o seu **Fury Ads API** refatorado:
+1.  O Estrategista (IA) decide: "Pausar anúncio `ad_123` no Google Ads".
+2.  Ele envia um comando (Webhook) para o **Fury Ads API**.
+3.  O Fury Ads valida o comando e coloca na **Fila (BullMQ)**.
+4.  O **GoogleAdsAdapter** do Fury Ads executa a pausa na API oficial do Google.
+5.  O sistema confirma a execução e volta para a Etapa 1.
+
+---
+
+## 2. Exemplo Prático de Uso (Caso de Uso: Teste A/B)
+
+| Momento | Ação do Sistema |
+| :--- | :--- |
+| **08:00** | O sistema inicia um Teste A/B entre dois criativos no Google Ads. |
+| **14:00** | A IA detecta que o Criativo A tem um custo por clique 40% menor e 2 conversões a mais. |
+| **14:05** | A IA decide encerrar o teste precocemente para economizar orçamento. |
+| **14:06** | O Fury Ads API recebe a ordem e pausa o Criativo B (perdedor). |
+| **14:10** | Você recebe uma notificação: "Teste A/B finalizado. Criativo A vencedor. Economia estimada de R$ 500,00." |
+
+---
+
+## 3. Benefícios desse Fluxo
+*   **Velocidade:** Reações que um gestor humano levaria horas para ter ocorrem em minutos.
+*   **Precisão:** Decisões baseadas em dados estatísticos, sem "achismos".
+*   **Resiliência:** O uso de filas (Fury Ads) garante que, se o Google Ads estiver fora do ar, a ação será tentada novamente até funcionar.
+*   **Escalabilidade:** Você pode gerenciar centenas de campanhas simultaneamente com a mesma eficiência.

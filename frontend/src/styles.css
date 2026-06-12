@@ -1,0 +1,125 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+
+/*
+  Fury Ads — design system.
+  Light glassmorphism with violet/cyan accents. The shadcn/ui primitives in
+  src/components/ui consume the semantic tokens below (bg-background,
+  text-muted-foreground, border-border, ...); the app components additionally
+  use the brand colors `violet`/`cyan`, the `font-display` family and the
+  `.surface` / `.surface-soft` glass helpers.
+*/
+
+@theme {
+  /* Semantic (shadcn) tokens */
+  --color-background: #f5f7fc;
+  --color-foreground: #0f1528;
+
+  --color-card: #ffffff;
+  --color-card-foreground: #0f1528;
+
+  --color-popover: #ffffff;
+  --color-popover-foreground: #0f1528;
+
+  --color-primary: #111827;
+  --color-primary-foreground: #f8fafc;
+
+  --color-secondary: #eef1f7;
+  --color-secondary-foreground: #1f2937;
+
+  --color-muted: #eef1f7;
+  --color-muted-foreground: #64748b;
+
+  --color-accent: #eef2fb;
+  --color-accent-foreground: #1f2937;
+
+  --color-destructive: #f43f5e;
+  --color-destructive-foreground: #ffffff;
+
+  --color-border: #e6e8ef;
+  --color-input: #e6e8ef;
+  --color-ring: #7c3aed;
+
+  /* Sidebar tokens (used by ui/sidebar) */
+  --color-sidebar: #ffffff;
+  --color-sidebar-foreground: #0f1528;
+  --color-sidebar-primary: #111827;
+  --color-sidebar-primary-foreground: #f8fafc;
+  --color-sidebar-accent: #eef2fb;
+  --color-sidebar-accent-foreground: #1f2937;
+  --color-sidebar-border: #e6e8ef;
+  --color-sidebar-ring: #7c3aed;
+
+  /* Chart tokens (used by ui/chart) */
+  --color-chart-1: #6d28d9;
+  --color-chart-2: #2563eb;
+  --color-chart-3: #06b6d4;
+  --color-chart-4: #f59e0b;
+  --color-chart-5: #f43f5e;
+
+  /* Brand accents — enable bg-violet, text-cyan, from-violet, via-cyan, etc. */
+  --color-violet: #7c3aed;
+  --color-cyan: #06b6d4;
+
+  /* Typography */
+  --font-sans: "DM Sans", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-display: "Space Grotesk", ui-sans-serif, system-ui, -apple-system, sans-serif;
+
+  --radius: 0.75rem;
+
+  /* Brand-aware shimmer used by the violations severity bar */
+  --animate-shimmer: shimmer 2s linear infinite;
+  @keyframes shimmer {
+    0% { background-position: 200% 0; }
+    100% { background-position: -200% 0; }
+  }
+}
+
+@layer base {
+  * {
+    border-color: var(--color-border);
+  }
+
+  html {
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+  }
+
+  body {
+    min-height: 100vh;
+    color: var(--color-foreground);
+    font-family: var(--font-sans);
+    /* Subtle Cyber-Ocean wash behind the light glass surfaces */
+    background-color: var(--color-background);
+    background-image:
+      radial-gradient(60rem 60rem at 110% -10%, rgba(124, 58, 237, 0.10), transparent 60%),
+      radial-gradient(50rem 50rem at -10% 110%, rgba(6, 182, 212, 0.10), transparent 55%);
+    background-attachment: fixed;
+  }
+
+  .font-display {
+    font-family: var(--font-display);
+  }
+}
+
+@layer components {
+  /* Default glass surface for GlassCard */
+  .surface {
+    background: rgba(255, 255, 255, 0.72);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1px solid rgba(255, 255, 255, 0.65);
+    box-shadow:
+      0 1px 0 rgba(255, 255, 255, 0.6) inset,
+      0 18px 40px -24px rgba(15, 18, 40, 0.35);
+  }
+
+  /* Lighter variant */
+  .surface-soft {
+    background: rgba(255, 255, 255, 0.5);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.5);
+    box-shadow: 0 12px 30px -26px rgba(15, 18, 40, 0.3);
+  }
+}

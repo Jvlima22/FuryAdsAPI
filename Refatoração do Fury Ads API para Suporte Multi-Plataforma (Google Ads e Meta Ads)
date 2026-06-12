@@ -1,0 +1,272 @@
+# Refatoração do Fury Ads API para Suporte Multi-Plataforma (Google Ads e Meta Ads)
+
+## 1. Introdução
+
+O objetivo desta refatoração é estender a funcionalidade do `fury-ads-api` para suportar operações de *takedown* (derrubada) de anúncios não apenas para uma plataforma genérica (como o mock atual da Meta API), mas especificamente para **Google Ads API** e **Meta Ads API**. Para isso, será implementada uma arquitetura baseada em provedores, que permitirá a fácil adição de novas plataformas no futuro.
+
+## 2. Arquitetura Proposta: Padrão Estratégia (Strategy Pattern)
+
+Para lidar com as diferenças nas APIs de cada plataforma (Google Ads e Meta Ads), será adotado o **Padrão Estratégia (Strategy Pattern)**. Isso significa que teremos uma interface comum para as operações de *takedown*, e implementações específicas para cada plataforma. O `takedown.worker.ts` será responsável por selecionar a estratégia correta com base na plataforma especificada no payload.
+
+### Componentes Chave:
+
+*   **`ViolationPayload` (Schema):** Será estendido para incluir um campo `platform` que indicará a plataforma do anúncio (`GOOGLE_ADS` ou `META_ADS`).
+*   **`WebhookController`:** Responsável por receber o webhook de violação, validar o payload (incluindo a plataforma) e enfileirar o job no BullMQ.
+*   **`TakedownWorker`:** O processador de jobs do BullMQ. Ele receberá o payload, identificará a plataforma e delegará a execução da operação de *takedown* ao `PlatformAdapter` apropriado.
+*   **`PlatformAdapter` (Interface/Contrato):** Uma interface que define o método `performTakedown(adId: string, tenantId: string, ...)` que cada provedor de plataforma deve implementar.
+*   **`GoogleAdsAdapter`:** Implementação do `PlatformAdapter` para interagir com a Google Ads API.
+*   **`MetaAdsAdapter`:** Implementação do `PlatformAdapter` para interagir com a Meta Ads API.
+
+## 3. Fluxo de Dados e Execução
+
+1.  Um webhook de violação é recebido pelo `WebhookController`.
+2.  O `WebhookController` valida o `ViolationPayload`, que agora inclui o campo `platform`.
+3.  O job é enfileirado no BullMQ com o payload completo.
+4.  O `TakedownWorker` consome o job da fila.
+5.  Dentro do `TakedownWorker`, a plataforma é extraída do payload.
+6.  Com base na plataforma, o `TakedownWorker` seleciona e invoca o método `performTakedown` do `PlatformAdapter` correspondente (ex: `GoogleAdsAdapter` ou `MetaAdsAdapter`).
+7.  O `PlatformAdapter` executa a lógica específica da API da plataforma (ex: chama a Google Ads API para pausar um anúncio).
+
+## 4. Estrutura de Diretórios Proposta
+
+```
+src/
+├── config/
+├── controllers/
+│   └── webhook.controller.ts
+│   └── jobs.controller.ts
+├── middlewares/
+├── queues/
+├── routes/
+├── schemas/
+│   └── violation.schema.ts
+├── workers/
+│   └── takedown.worker.ts
+├── platforms/               # Novo diretório para adaptadores de plataforma
+│   ├── index.ts             # Exporta os adaptadores
+│   ├── platform.interface.ts # Define a interface PlatformAdapter
+│   ├── google-ads.adapter.ts # Implementação para Google Ads
+│   └── meta-ads.adapter.ts   # Implementação para Meta Ads
+└── utils/
+```
+
+## 5. Alterações Detalhadas nos Componentes
+
+### 5.1. `schemas/violation.schema.ts`
+
+Será necessário adicionar um novo `enum` para as plataformas e incluí-lo no `violationPayloadSchema`.
+
+```typescript
+// src/schemas/violation.schema.ts
+import { z } from 'zod';
+
+export const platformSchema = z.enum([
+  'GOOGLE_ADS',
+  'META_ADS',
+  // Adicionar outras plataformas aqui conforme necessário
+]);
+
+export const violationTypeSchema = z.enum([
+  'PROHIBITED_TERM',
+  'BRAND_VIOLATION',
+  'COMPLIANCE_FAIL',
+]);
+
+export const severitySchema = z.enum(["LOW", "MEDIUM", "HIGH", "CRITICAL"]);
+
+export const violationPayloadSchema = z.object({
+  adId: z.string().min(1, 'adId é obrigatório'),
+  tenantId: z.string().min(1, 'tenantId é obrigatório'),
+  platform: platformSchema, // Novo campo para identificar a plataforma
+  violationType: violationTypeSchema,
+  severity: severitySchema,
+  detectedAt: z.iso.datetime(),
+});
+
+export type ViolationPayload = z.infer<typeof violationPayloadSchema>;
+export type ViolationType = z.infer<typeof violationTypeSchema>;
+export type Severity = z.infer<typeof severitySchema>;
+export type Platform = z.infer<typeof platformSchema>;
+```
+
+### 5.2. `controllers/webhook.controller.ts`
+
+O controlador de webhook precisará apenas garantir que o `platform` seja validado junto com o restante do payload. A lógica de enfileiramento permanece a mesma.
+
+### 5.3. `workers/takedown.worker.ts`
+
+Este será o principal ponto de refatoração. O worker precisará importar os adaptadores de plataforma e, com base no campo `platform` do job, chamar o método `performTakedown` do adaptador correto.
+
+```typescript
+// src/workers/takedown.worker.ts (Exemplo simplificado)
+import { Job } from 'bullmq';
+import { ViolationPayload } from '../schemas/violation.schema';
+import { getPlatformAdapter } from '../platforms'; // Função para obter o adaptador
+
+export const takedownProcessor = async (job: Job<ViolationPayload>) => {
+  const { adId, tenantId, platform, violationType, severity } = job.data;
+
+  console.log(`Processing takedown for ad ${adId} on platform ${platform} due to ${violationType}`);
+
+  try {
+    const adapter = getPlatformAdapter(platform);
+    await adapter.performTakedown(adId, tenantId, violationType, severity); // Passar mais dados se necessário
+    console.log(`Takedown successful for ad ${adId} on platform ${platform}`);
+  } catch (error) {
+    console.error(`Failed to perform takedown for ad ${adId} on platform ${platform}:`, error);
+    throw error; // Re-throw para que o BullMQ possa lidar com retries
+  }
+};
+```
+
+### 5.4. Novo Diretório `src/platforms/`
+
+Este diretório conterá a interface e as implementações específicas de cada plataforma.
+
+#### `src/platforms/platform.interface.ts`
+
+```typescript
+// src/platforms/platform.interface.ts
+import { ViolationType, Severity } from '../schemas/violation.schema';
+
+export interface IPlatformAdapter {
+  performTakedown(
+    adId: string,
+    tenantId: string,
+    violationType: ViolationType,
+    severity: Severity,
+    // Adicionar outros parâmetros relevantes aqui
+  ): Promise<void>;
+}
+```
+
+#### `src/platforms/google-ads.adapter.ts`
+
+Esta implementação usará a Google Ads API para realizar a operação de *takedown*. Isso pode envolver pausar o anúncio, remover o anúncio ou o grupo de anúncios, dependendo da `violationType` e `severity`.
+
+```typescript
+// src/platforms/google-ads.adapter.ts
+import { IPlatformAdapter } from './platform.interface';
+import { ViolationType, Severity } from '../schemas/violation.schema';
+// Importar o cliente da Google Ads API aqui
+// import { GoogleAdsApi } from 'google-ads-api'; // Exemplo
+
+export class GoogleAdsAdapter implements IPlatformAdapter {
+  async performTakedown(
+    adId: string,
+    tenantId: string,
+    violationType: ViolationType,
+    severity: Severity,
+  ): Promise<void> {
+    console.log(`Google Ads Adapter: Performing takedown for ad ${adId} (tenant: ${tenantId}) due to ${violationType} with severity ${severity}`);
+    // Lógica para interagir com a Google Ads API
+    // Exemplo: Pausar o anúncio usando adId e tenantId (que pode ser o customerId na Google Ads API)
+    // const googleAdsClient = new GoogleAdsApi({ /* credenciais */ });
+    // await googleAdsClient.mutateAd({ adId, status: 'PAUSED' });
+    // ... implementar a lógica real de chamada à API ...
+    console.log(`Google Ads Adapter: Takedown logic for ad ${adId} executed.`);
+  }
+}
+```
+
+#### `src/platforms/meta-ads.adapter.ts`
+
+Similar ao Google Ads, esta implementação usará a Meta Ads API.
+
+```typescript
+// src/platforms/meta-ads.adapter.ts
+import { IPlatformAdapter } from './platform.interface';
+import { ViolationType, Severity } from '../schemas/violation.schema';
+// Importar o cliente da Meta Ads API aqui
+// import { FacebookAdsApi } from 'facebook-ads-api'; // Exemplo
+
+export class MetaAdsAdapter implements IPlatformAdapter {
+  async performTakedown(
+    adId: string,
+    tenantId: string,
+    violationType: ViolationType,
+    severity: Severity,
+  ): Promise<void> {
+    console.log(`Meta Ads Adapter: Performing takedown for ad ${adId} (tenant: ${tenantId}) due to ${violationType} with severity ${severity}`);
+    // Lógica para interagir com a Meta Ads API
+    // Exemplo: Pausar o anúncio usando adId e tenantId (que pode ser o accountId na Meta Ads API)
+    // const metaAdsClient = new FacebookAdsApi({ /* credenciais */ });
+    // await metaAdsClient.ad(adId).update({ status: 'PAUSED' });
+    // ... implementar a lógica real de chamada à API ...
+    console.log(`Meta Ads Adapter: Takedown logic for ad ${adId} executed.`);
+  }
+}
+```
+
+#### `src/platforms/index.ts`
+
+Este arquivo será responsável por exportar uma função que retorna o adaptador correto.
+
+```typescript
+// src/platforms/index.ts
+import { IPlatformAdapter } from './platform.interface';
+import { GoogleAdsAdapter } from './google-ads.adapter';
+import { MetaAdsAdapter } from './meta-ads.adapter';
+import { Platform } from '../schemas/violation.schema';
+
+const adapters: Record<Platform, IPlatformAdapter> = {
+  GOOGLE_ADS: new GoogleAdsAdapter(),
+  META_ADS: new MetaAdsAdapter(),
+};
+
+export function getPlatformAdapter(platform: Platform): IPlatformAdapter {
+  const adapter = adapters[platform];
+  if (!adapter) {
+    throw new Error(`No adapter found for platform: ${platform}`);
+  }
+  return adapter;
+}
+```
+
+## 6. Considerações Adicionais
+
+*   **Autenticação:** Cada adaptador precisará de suas próprias credenciais e lógica de autenticação para a respectiva API (OAuth 2.0 para Google Ads, Tokens de Acesso para Meta Ads). Estas credenciais devem ser gerenciadas de forma segura (variáveis de ambiente, HashiCorp Vault, etc.).
+*   **Tratamento de Erros:** A lógica de tratamento de erros dentro de cada adaptador deve ser robusta para lidar com falhas específicas da API da plataforma.
+*   **Configuração:** As URLs de API, versões e outros detalhes específicos da plataforma devem ser configuráveis (ex: via variáveis de ambiente).
+*   **Testes:** Testes unitários e de integração serão cruciais para garantir que cada adaptador funcione corretamente e que o sistema selecione o adaptador certo.
+
+Esta arquitetura modular permitirá que o `fury-ads-api` se torne uma ferramenta poderosa para gerenciar operações de *takedown* em diversas plataformas de anúncios, sendo facilmente extensível para futuras integrações.
+
+## 7. Próximos Passos de Implementação
+
+### 7.1. Instalação de Dependências
+
+Será necessário instalar as SDKs oficiais das plataformas:
+
+```bash
+npm install google-ads-api facebook-ads-sdk
+```
+
+### 7.2. Configuração de Variáveis de Ambiente
+
+O arquivo `.env` precisará ser atualizado com as credenciais de cada plataforma:
+
+```env
+# Google Ads
+GOOGLE_ADS_CLIENT_ID=...
+GOOGLE_ADS_CLIENT_SECRET=...
+GOOGLE_ADS_DEVELOPER_TOKEN=...
+GOOGLE_ADS_REFRESH_TOKEN=...
+
+# Meta Ads
+META_ADS_ACCESS_TOKEN=...
+META_ADS_APP_ID=...
+META_ADS_APP_SECRET=...
+```
+
+### 7.3. Implementação dos Adaptadores
+
+Cada adaptador deve ser implementado focando na resiliência e no tratamento de erros específicos de cada API. O `GoogleAdsAdapter` usará o `google-ads-api` e o `MetaAdsAdapter` usará o `facebook-ads-sdk`.
+
+### 7.4. Atualização do Worker
+
+O `takedown.worker.ts` será atualizado para remover a chamada `fetch` genérica e substituí-la pela lógica de seleção de adaptador descrita anteriormente.
+
+## 8. Conclusão da Refatoração
+
+Com estas mudanças, o `fury-ads-api` deixará de ser um mock de teste para se tornar uma ferramenta de produção capaz de gerenciar anúncios em tempo real nas principais plataformas do mercado. A arquitetura de provedores garante que o sistema seja fácil de manter e expandir, permitindo que novas plataformas sejam adicionadas com esforço mínimo.

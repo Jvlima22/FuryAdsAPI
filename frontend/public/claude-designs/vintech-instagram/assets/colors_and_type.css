@@ -1,0 +1,39 @@
+/* =========================================================
+   VINTECH — Design Tokens
+   Bordô profundo + Dourado · Da vindima à última taça
+   ========================================================= */
+
+@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=DM+Sans:wght@400;500;600;700&display=swap');
+
+:root {
+  --vt-bordo-deep:    350 70% 11%;
+  --vt-bordo:         350 55% 22%;
+  --vt-bordo-glow:    350 55% 35%;
+  --vt-gold:           43 53% 54%;
+  --vt-gold-soft:      43 60% 78%;
+  --vt-cream:          30 33% 96%;
+  --vt-cream-deep:     30 25% 90%;
+  --vt-muted:          30 20% 92%;
+  --vt-ink:           350 60% 8%;
+  --vt-ink-soft:      350 10% 38%;
+  --vt-border:         30 20% 85%;
+  --vt-success:       142 50% 35%;
+  --vt-danger:          0 70% 42%;
+  --background:          hsl(var(--vt-cream));
+  --foreground:          hsl(var(--vt-ink));
+  --card:                #ffffff;
+  --primary:             hsl(var(--vt-bordo));
+  --gold:                hsl(var(--vt-gold));
+  --gold-soft:           hsl(var(--vt-gold-soft));
+  --border:              hsl(var(--vt-border));
+  --font-display: 'Space Grotesk', system-ui, sans-serif;
+  --font-sans:    'DM Sans', system-ui, sans-serif;
+}
+
+body {
+  font-family: var(--font-sans);
+  color: var(--foreground);
+  background: var(--background);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}

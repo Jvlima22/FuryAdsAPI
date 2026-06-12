@@ -1,0 +1,81 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8"/>
+<title>Vintech · Conteúdo Instagram</title>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<link rel="stylesheet" href="assets/colors_and_type.css"/>
+
+<script>
+  window.__resources = window.__resources || {};
+  [['vineyard', 'assets/vineyard.jpg'], ['heroWine', 'assets/hero-wine.jpg']]
+    .forEach(function (p) { if (!window.__resources[p[0]]) window.__resources[p[0]] = p[1]; });
+</script>
+
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" crossorigin="anonymous"></script>
+
+<script type="text/babel" src="shared.jsx"></script>
+<script type="text/babel" src="mockups.jsx"></script>
+<script type="text/babel" src="posts.jsx"></script>
+<script type="text/babel" src="posts2.jsx"></script>
+<script type="text/babel" src="carousel.jsx"></script>
+<script type="text/babel" src="reels.jsx"></script>
+
+<style>
+  html, body { margin: 0; padding: 0; background: hsl(30 20% 88%); }
+  #root { display: flex; flex-direction: column; align-items: stretch; gap: 56px; padding: 56px 0; }
+  .vt-group { display: flex; flex-direction: column; align-items: stretch; gap: 16px; }
+  .vt-group-title { font-family: 'Space Grotesk', sans-serif; font-weight: 700; font-size: 30px; color: hsl(350 55% 22%); letter-spacing: -0.01em; padding: 0 44px; }
+  .vt-row { display: flex; flex-wrap: nowrap; gap: 28px; align-items: flex-start; overflow-x: auto; overflow-y: hidden; scroll-snap-type: x proximity; padding: 0 44px 18px; }
+  .vt-row::-webkit-scrollbar { height: 10px; }
+  .vt-row::-webkit-scrollbar-thumb { background: rgba(0,0,0,0.22); border-radius: 8px; }
+  .vt-row::-webkit-scrollbar-track { background: transparent; }
+  .vt-frame { zoom: 0.3; overflow: hidden; box-shadow: 0 14px 48px -14px rgba(0,0,0,0.28); border-radius: 8px; flex-shrink: 0; background: #fff; scroll-snap-align: start; }
+</style>
+</head>
+<body>
+<div id="root"></div>
+<script type="text/babel">
+  const W = window;
+  const POST = [W.POST_W, W.POST_H];
+  const CAR = [W.CAR_W, W.CAR_H];
+  const REEL = [W.REEL_W, W.REEL_H];
+
+  const Frame = ({ size, name }) => (
+    <div className="vt-frame" style={{ width: size[0], height: size[1] }} data-name={name}>
+      {React.createElement(W[name])}
+    </div>
+  );
+
+  const Group = ({ title, names, size }) => (
+    <div className="vt-group">
+      <div className="vt-group-title">{title}</div>
+      <div className="vt-row">
+        {names.map((n) => <Frame key={n} size={size} name={n} />)}
+      </div>
+    </div>
+  );
+
+  function App() {
+    return (
+      <>
+        <Group title="Feed warmup · 5 posts de boas-vindas" size={POST}
+          names={['PostB1Manifesto', 'PostB2WhoFor', 'PostB3StockBlind', 'PostB4NoShow', 'PostB5Quote']} />
+        <Group title="Posts estáticos · engajamento" size={POST}
+          names={['Post1Humor', 'Post2Modules', 'Post3BeforeAfter']} />
+        <Group title="Carrossel · 5 sinais (6 slides)" size={CAR}
+          names={['CSlide1', 'CSlide2', 'CSlide3', 'CSlide4', 'CSlide5', 'CSlide6']} />
+        <Group title="Reel 1 · Humor — Malabarismo" size={REEL}
+          names={['R1F1', 'R1F2', 'R1F3']} />
+        <Group title="Reel 2 · Autoridade — Do terroir aos dados" size={REEL}
+          names={['R2F1', 'R2F2', 'R2F3']} />
+      </>
+    );
+  }
+
+  ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+</script>
+</body>
+</html>
