@@ -28,10 +28,12 @@
   #root { display: flex; flex-direction: column; align-items: stretch; gap: 56px; padding: 56px 0; }
   .vt-group { display: flex; flex-direction: column; align-items: stretch; gap: 16px; }
   .vt-group-title { font-family: 'Space Grotesk', sans-serif; font-weight: 700; font-size: 30px; color: hsl(350 55% 22%); letter-spacing: -0.01em; padding: 0 44px; }
-  .vt-row { display: flex; flex-wrap: nowrap; gap: 28px; align-items: flex-start; overflow-x: auto; overflow-y: hidden; scroll-snap-type: x proximity; padding: 0 44px 18px; }
-  .vt-row::-webkit-scrollbar { height: 10px; }
-  .vt-row::-webkit-scrollbar-thumb { background: rgba(0,0,0,0.22); border-radius: 8px; }
-  .vt-row::-webkit-scrollbar-track { background: transparent; }
+  /* scroll horizontal mantido, mas SEM a barra visível embaixo do carrossel */
+  .vt-row { display: flex; flex-wrap: nowrap; gap: 28px; align-items: flex-start; overflow-x: auto; overflow-y: hidden; scroll-snap-type: x proximity; padding: 0 0 18px 44px; scrollbar-width: none; -ms-overflow-style: none; }
+  /* Espaçador final: o padding-right de um scroll container flex é "comido" ao
+     rolar até o fim, cortando o último card. Um item flex vazio garante a folga. */
+  .vt-row::after { content: ""; flex: 0 0 44px; }
+  .vt-row::-webkit-scrollbar { display: none; }
   .vt-frame { zoom: 0.3; overflow: hidden; box-shadow: 0 14px 48px -14px rgba(0,0,0,0.28); border-radius: 8px; flex-shrink: 0; background: #fff; scroll-snap-align: start; }
 </style>
 </head>

@@ -1,23 +1,43 @@
-import { Link, useRouterState, type LinkProps } from "@tanstack/react-router";
+import { Link, useRouterState, useNavigate, type LinkProps } from "@tanstack/react-router";
 import {
   BarChart3,
   ShieldAlert,
   Activity,
   Megaphone,
   Images,
-  Flame,
   Search,
   Bell,
   PanelLeftClose,
   PanelLeftOpen,
+  Loader2,
+  LogOut,
+  UserPlus,
   type LucideIcon,
 } from "lucide-react";
 import { useEffect, useState, type ReactNode } from "react";
 import { cn } from "@/lib/utils";
 import { ActivityFeedPanel } from "@/components/activity-feed-panel";
 import { AccountSwitcher } from "@/components/account-switcher";
+import { MobileAccountSwitcher } from "@/components/mobile-account-switcher";
 import { Tooltip, TooltipTrigger, TooltipContent } from "@/components/ui/tooltip";
+import {
+  DropdownMenu,
+  DropdownMenuTrigger,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+} from "@/components/ui/dropdown-menu";
+import { InviteUserDialog } from "@/components/invite-user-dialog";
 import { activityFeed } from "@/lib/activity";
+import { useAuth } from "@/lib/auth-context";
+
+function initialsFrom(name: string | undefined, email: string | null): string {
+  const source = name?.trim() || email?.split("@")[0] || "";
+  const parts = source.split(/[\s._-]+/).filter(Boolean);
+  if (!parts.length) return "FA";
+  return (parts[0][0] + (parts[1]?.[0] ?? "")).toUpperCase();
+}
 
 type NavItem = { to: LinkProps["to"]; label: string; icon: LucideIcon };
 
@@ -72,9 +92,20 @@ function NavLink({ item, active, collapsed }: { item: NavItem; active: boolean; 
 
 export function AppShell({ children }: { children: ReactNode }) {
   const pathname = useRouterState({ select: (s) => s.location.pathname });
+  const navigate = useNavigate();
+  const { user, loading, isAuthenticated, isConfigured, isAdmin, signOut } = useAuth();
   const [feedOpen, setFeedOpen] = useState(false);
+  const [inviteOpen, setInviteOpen] = useState(false);
   const [collapsed, setCollapsed] = useState(false);
   const unread = activityFeed.filter((e) => e.kind === "violation" || e.kind === "auto_pause").length;
+
+  // Gate: sem sessão, manda pro login. Quando o Supabase não está configurado
+  // deixamos o app abrir (modo demo) para não travar o desenvolvimento.
+  useEffect(() => {
+    if (isConfigured && !loading && !isAuthenticated) {
+      navigate({ to: "/login" });
+    }
+  }, [isConfigured, loading, isAuthenticated, navigate]);
 
   // Restore the persisted collapse state after mount (SSR-safe).
   useEffect(() => {
@@ -84,6 +115,24 @@ export function AppShell({ children }: { children: ReactNode }) {
       /* ignore */
     }
   }, []);
+
+  async function handleSignOut() {
+    await signOut();
+    navigate({ to: "/login" });
+  }
+
+  // Evita piscar o conteúdo protegido enquanto a sessão resolve / redireciona.
+  // (depois de TODOS os hooks — mover acima quebra as Rules of Hooks)
+  if (isConfigured && (loading || !isAuthenticated)) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-background">
+        <Loader2 className="size-6 animate-spin text-muted-foreground" />
+      </div>
+    );
+  }
+
+  const displayName =
+    (user?.user_metadata?.name as string | undefined) || user?.email?.split("@")[0] || "Conta";
 
   function toggleCollapsed() {
     setCollapsed((c) => {
@@ -108,16 +157,12 @@ export function AppShell({ children }: { children: ReactNode }) {
       >
         {/* Brand */}
         <div className={cn("flex items-center gap-3 p-5", collapsed && "justify-center px-0")}>
-          <div
-            className="size-9 rounded-xl flex items-center justify-center shrink-0"
-            style={{ background: "linear-gradient(135deg, #6d28d9, #2563eb)" }}
-          >
-            <Flame className="size-4.5 text-white" />
-          </div>
-          {!collapsed && (
-            <div>
-              <p className="font-display font-bold leading-none">Fury Ads</p>
-              <p className="text-[11px] text-muted-foreground mt-1">Control Center</p>
+          {collapsed ? (
+            <img src="/logo-ilustration.png" alt="Metrik" className="size-9 object-contain shrink-0" />
+          ) : (
+            <div className="flex flex-col gap-1">
+              <img src="/logo-METRIK.png" alt="Metrik" className="h-7 w-auto object-contain" />
+              <p className="text-[11px] text-muted-foreground">Control Center</p>
             </div>
           )}
         </div>
@@ -189,14 +234,9 @@ export function AppShell({ children }: { children: ReactNode }) {
 
       <div className="flex-1 flex flex-col min-w-0">
         <header className="h-14 border-b border-border bg-white/70 backdrop-blur-md flex items-center px-4 md:px-6 gap-3 sticky top-0 z-30">
-          <div className="md:hidden flex items-center gap-2">
-            <div
-              className="size-7 rounded-lg flex items-center justify-center"
-              style={{ background: "linear-gradient(135deg, #6d28d9, #2563eb)" }}
-            >
-              <Flame className="size-3.5 text-white" />
-            </div>
-            <span className="font-display font-bold text-sm">Fury Ads</span>
+          <div className="md:hidden flex items-center gap-2 flex-1 min-w-0">
+            <img src="/logo-ilustration.png" alt="Metrik" className="h-7 w-auto object-contain shrink-0" />
+            <MobileAccountSwitcher />
           </div>
           <div className="hidden md:flex items-center gap-2 flex-1 max-w-md">
             <div className="relative w-full">
@@ -207,7 +247,6 @@ export function AppShell({ children }: { children: ReactNode }) {
               />
             </div>
           </div>
-          <div className="flex-1 md:hidden" />
           <button
             onClick={() => setFeedOpen(true)}
             className="relative size-9 rounded-lg hover:bg-accent flex items-center justify-center text-foreground/70"
@@ -218,9 +257,38 @@ export function AppShell({ children }: { children: ReactNode }) {
               <span className="absolute top-1.5 right-1.5 size-2 rounded-full bg-rose-500 ring-2 ring-white animate-pulse" />
             )}
           </button>
-          <div className="size-8 rounded-full bg-foreground text-background flex items-center justify-center text-xs font-semibold">
-            FA
-          </div>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <button
+                className="size-8 rounded-full bg-foreground text-background flex items-center justify-center text-xs font-semibold hover:opacity-90 transition-opacity"
+                aria-label="Menu da conta"
+              >
+                {initialsFrom(user?.user_metadata?.name as string | undefined, user?.email ?? null)}
+              </button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-56">
+              <DropdownMenuLabel className="flex flex-col gap-0.5">
+                <span className="text-sm font-medium">{displayName}</span>
+                {user?.email && (
+                  <span className="text-xs font-normal text-muted-foreground">{user.email}</span>
+                )}
+              </DropdownMenuLabel>
+              <DropdownMenuSeparator />
+              {isAdmin && (
+                <>
+                  <DropdownMenuItem onClick={() => setInviteOpen(true)}>
+                    <UserPlus className="size-4" />
+                    Convidar usuário
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator />
+                </>
+              )}
+              <DropdownMenuItem onClick={handleSignOut} className="text-destructive focus:text-destructive">
+                <LogOut className="size-4" />
+                Sair
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
         </header>
 
         {/* Mobile nav */}
@@ -246,6 +314,7 @@ export function AppShell({ children }: { children: ReactNode }) {
         <main className="flex-1 p-4 md:p-8 max-w-[1500px] mx-auto w-full">{children}</main>
       </div>
       <ActivityFeedPanel open={feedOpen} onClose={() => setFeedOpen(false)} />
+      {isAdmin && <InviteUserDialog open={inviteOpen} onOpenChange={setInviteOpen} />}
     </div>
   );
 }

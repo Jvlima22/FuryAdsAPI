@@ -19,7 +19,7 @@ import { cn } from "@/lib/utils";
 const PLATFORM_ORDER: AccountPlatform[] = ["GOOGLE_ADS", "META_ADS"];
 
 /**
- * Account switcher shown under the Fury Ads logo in the sidebar. Lists the
+ * Account switcher shown under the Metrik logo in the sidebar. Lists the
  * connected accounts grouped by platform, plus shortcuts to add / manage.
  * Collapses to just the platform badge when the sidebar is collapsed.
  */

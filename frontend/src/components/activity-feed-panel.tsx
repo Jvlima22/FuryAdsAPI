@@ -25,7 +25,7 @@ export function ActivityFeedPanel({ open, onClose }: { open: boolean; onClose: (
           </SheetDescription>
         </SheetHeader>
 
-        <div className="p-5 overflow-y-auto h-[calc(100vh-5.5rem)]">
+        <div className="p-5 overflow-y-auto h-[calc(100dvh-5.5rem)]">
           <div className="relative">
             <div className="absolute left-[15px] top-2 bottom-2 w-px bg-gradient-to-b from-violet/30 via-border to-transparent" />
             <div className="space-y-3">

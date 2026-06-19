@@ -1,0 +1,47 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 675" font-family="'Space Grotesk','DM Sans','Segoe UI',system-ui,sans-serif">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#041020"/>
+      <stop offset="0.55" stop-color="#06223f"/>
+      <stop offset="1" stop-color="#03101e"/>
+    </linearGradient>
+    <radialGradient id="glow" cx="0.83" cy="0.4" r="0.45">
+      <stop offset="0" stop-color="#0F6CBD" stop-opacity="0.55"/>
+      <stop offset="1" stop-color="#0F6CBD" stop-opacity="0"/>
+    </radialGradient>
+    <pattern id="grid" width="44" height="44" patternUnits="userSpaceOnUse">
+      <path d="M44 0H0V44" fill="none" stroke="#0F6CBD" stroke-width="1" opacity="0.07"/>
+    </pattern>
+  </defs>
+  <rect width="1200" height="675" fill="url(#bg)"/>
+  <rect width="1200" height="675" fill="url(#grid)"/>
+  <rect width="1200" height="675" fill="url(#glow)"/>
+
+  <!-- 30 min clock motif -->
+  <g transform="translate(1045,270)">
+    <circle r="96" fill="none" stroke="#0F6CBD" stroke-width="3"/>
+    <circle r="96" fill="none" stroke="#7db4e6" stroke-width="6" stroke-dasharray="151 603" stroke-linecap="round" transform="rotate(-90)"/>
+    <line x1="0" y1="0" x2="0" y2="-58" stroke="#fff" stroke-width="5" stroke-linecap="round"/>
+    <line x1="0" y1="0" x2="44" y2="0" stroke="#fff" stroke-width="5" stroke-linecap="round"/>
+    <circle r="7" fill="#fff"/>
+    <text x="0" y="150" fill="#7db4e6" font-size="24" font-weight="700" text-anchor="middle" letter-spacing="2">30 MIN</text>
+  </g>
+
+  <text x="80" y="92" fill="#5A8FC4" font-size="20" font-weight="600" letter-spacing="4">DIAGNÓSTICO · 04</text>
+  <g transform="translate(1040,70)">
+    <rect x="0" y="0" width="80" height="34" rx="8" fill="#0F6CBD"/>
+    <text x="40" y="24" fill="#fff" font-size="20" font-weight="700" text-anchor="middle" letter-spacing="2">TGL</text>
+  </g>
+
+  <text x="80" y="320" fill="#ffffff" font-size="64" font-weight="700" letter-spacing="-2">30 minutos podem</text>
+  <text x="80" y="390" fill="#ffffff" font-size="64" font-weight="700" letter-spacing="-2">mudar sua</text>
+  <text x="392" y="390" fill="#0F6CBD" font-size="64" font-weight="700" letter-spacing="-2">operação.</text>
+
+  <text x="80" y="470" fill="#CDCFD2" font-size="26" font-weight="400">Mapeamos seus gargalos e onde a IA economiza horas.</text>
+
+  <text x="80" y="628" fill="#5A5E64" font-size="20" font-weight="600" letter-spacing="2">tgl-solutions.com.br</text>
+  <g transform="translate(0,612)">
+    <rect x="990" y="2" width="36" height="2" fill="#0F6CBD"/>
+    <text x="1120" y="9" fill="#CDCFD2" font-size="20" font-weight="600" text-anchor="end">Agendar call</text>
+  </g>
+</svg>

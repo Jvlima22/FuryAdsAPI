@@ -10,9 +10,12 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as ViolationsRouteImport } from './routes/violations'
+import { Route as RegisterRouteImport } from './routes/register'
+import { Route as LoginRouteImport } from './routes/login'
 import { Route as JobsRouteImport } from './routes/jobs'
 import { Route as DashboardRouteImport } from './routes/dashboard'
 import { Route as CreativesRouteImport } from './routes/creatives'
+import { Route as AcceptInviteRouteImport } from './routes/accept-invite'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as ManageIndexRouteImport } from './routes/manage.index'
 import { Route as ManageCampaignIdRouteImport } from './routes/manage.$campaignId'
@@ -21,6 +24,16 @@ import { Route as CampaignsCampaignIdRouteImport } from './routes/campaigns.$cam
 const ViolationsRoute = ViolationsRouteImport.update({
   id: '/violations',
   path: '/violations',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const RegisterRoute = RegisterRouteImport.update({
+  id: '/register',
+  path: '/register',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const LoginRoute = LoginRouteImport.update({
+  id: '/login',
+  path: '/login',
   getParentRoute: () => rootRouteImport,
 } as any)
 const JobsRoute = JobsRouteImport.update({
@@ -36,6 +49,11 @@ const DashboardRoute = DashboardRouteImport.update({
 const CreativesRoute = CreativesRouteImport.update({
   id: '/creatives',
   path: '/creatives',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AcceptInviteRoute = AcceptInviteRouteImport.update({
+  id: '/accept-invite',
+  path: '/accept-invite',
   getParentRoute: () => rootRouteImport,
 } as any)
 const IndexRoute = IndexRouteImport.update({
@@ -61,9 +79,12 @@ const CampaignsCampaignIdRoute = CampaignsCampaignIdRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/accept-invite': typeof AcceptInviteRoute
   '/creatives': typeof CreativesRoute
   '/dashboard': typeof DashboardRoute
   '/jobs': typeof JobsRoute
+  '/login': typeof LoginRoute
+  '/register': typeof RegisterRoute
   '/violations': typeof ViolationsRoute
   '/campaigns/$campaignId': typeof CampaignsCampaignIdRoute
   '/manage/$campaignId': typeof ManageCampaignIdRoute
@@ -71,9 +92,12 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/accept-invite': typeof AcceptInviteRoute
   '/creatives': typeof CreativesRoute
   '/dashboard': typeof DashboardRoute
   '/jobs': typeof JobsRoute
+  '/login': typeof LoginRoute
+  '/register': typeof RegisterRoute
   '/violations': typeof ViolationsRoute
   '/campaigns/$campaignId': typeof CampaignsCampaignIdRoute
   '/manage/$campaignId': typeof ManageCampaignIdRoute
@@ -82,9 +106,12 @@ export interface FileRoutesByTo {
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/accept-invite': typeof AcceptInviteRoute
   '/creatives': typeof CreativesRoute
   '/dashboard': typeof DashboardRoute
   '/jobs': typeof JobsRoute
+  '/login': typeof LoginRoute
+  '/register': typeof RegisterRoute
   '/violations': typeof ViolationsRoute
   '/campaigns/$campaignId': typeof CampaignsCampaignIdRoute
   '/manage/$campaignId': typeof ManageCampaignIdRoute
@@ -94,9 +121,12 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/accept-invite'
     | '/creatives'
     | '/dashboard'
     | '/jobs'
+    | '/login'
+    | '/register'
     | '/violations'
     | '/campaigns/$campaignId'
     | '/manage/$campaignId'
@@ -104,9 +134,12 @@ export interface FileRouteTypes {
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
+    | '/accept-invite'
     | '/creatives'
     | '/dashboard'
     | '/jobs'
+    | '/login'
+    | '/register'
     | '/violations'
     | '/campaigns/$campaignId'
     | '/manage/$campaignId'
@@ -114,9 +147,12 @@ export interface FileRouteTypes {
   id:
     | '__root__'
     | '/'
+    | '/accept-invite'
     | '/creatives'
     | '/dashboard'
     | '/jobs'
+    | '/login'
+    | '/register'
     | '/violations'
     | '/campaigns/$campaignId'
     | '/manage/$campaignId'
@@ -125,9 +161,12 @@ export interface FileRouteTypes {
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  AcceptInviteRoute: typeof AcceptInviteRoute
   CreativesRoute: typeof CreativesRoute
   DashboardRoute: typeof DashboardRoute
   JobsRoute: typeof JobsRoute
+  LoginRoute: typeof LoginRoute
+  RegisterRoute: typeof RegisterRoute
   ViolationsRoute: typeof ViolationsRoute
   CampaignsCampaignIdRoute: typeof CampaignsCampaignIdRoute
   ManageCampaignIdRoute: typeof ManageCampaignIdRoute
@@ -141,6 +180,20 @@ declare module '@tanstack/react-router' {
       path: '/violations'
       fullPath: '/violations'
       preLoaderRoute: typeof ViolationsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/register': {
+      id: '/register'
+      path: '/register'
+      fullPath: '/register'
+      preLoaderRoute: typeof RegisterRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/login': {
+      id: '/login'
+      path: '/login'
+      fullPath: '/login'
+      preLoaderRoute: typeof LoginRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/jobs': {
@@ -162,6 +215,13 @@ declare module '@tanstack/react-router' {
       path: '/creatives'
       fullPath: '/creatives'
       preLoaderRoute: typeof CreativesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/accept-invite': {
+      id: '/accept-invite'
+      path: '/accept-invite'
+      fullPath: '/accept-invite'
+      preLoaderRoute: typeof AcceptInviteRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/': {
@@ -197,9 +257,12 @@ declare module '@tanstack/react-router' {
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  AcceptInviteRoute: AcceptInviteRoute,
   CreativesRoute: CreativesRoute,
   DashboardRoute: DashboardRoute,
   JobsRoute: JobsRoute,
+  LoginRoute: LoginRoute,
+  RegisterRoute: RegisterRoute,
   ViolationsRoute: ViolationsRoute,
   CampaignsCampaignIdRoute: CampaignsCampaignIdRoute,
   ManageCampaignIdRoute: ManageCampaignIdRoute,

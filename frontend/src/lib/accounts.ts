@@ -3,7 +3,7 @@
  *
  * Pure mock layer — no real credentials are sent. The active account scopes
  * the dashboard/violations UI (platform + a deterministic per-account scale),
- * mirroring how the real Fury Ads API would key metrics by customerId.
+ * mirroring how the real Metrik API would key metrics by customerId.
  */
 
 export type AccountPlatform = "GOOGLE_ADS" | "META_ADS";

@@ -56,9 +56,9 @@ import { PLATFORM_DATA_KEY, accountScale, platformMeta } from "@/lib/accounts";
 export const Route = createFileRoute("/dashboard")({
   head: () => ({
     meta: [
-      { title: "Central de Anúncios · Fury Ads" },
+      { title: "Central de Anúncios · Metrik" },
       { name: "description", content: "Centro de inteligência: criativos, engajamento social, compliance e performance unificados." },
-      { property: "og:title", content: "Central de Anúncios · Fury Ads" },
+      { property: "og:title", content: "Central de Anúncios · Metrik" },
       { property: "og:description", content: "Gestão visual de anúncios com glassmorphism, métricas sociais e detecção de violações." },
     ],
   }),
@@ -82,7 +82,7 @@ const complianceDot: Record<string, string> = {
 
 function Kpi({ icon: Icon, label, value, delta, positive = true }: { icon: any; label: string; value: string; delta: string; positive?: boolean }) {
   return (
-    <GlassCard className="p-5">
+    <GlassCard className="p-4 sm:p-5">
       <div className="flex items-center justify-between">
         <div className="size-9 rounded-lg bg-accent flex items-center justify-center text-foreground/70">
           <Icon className="size-4" />
@@ -193,7 +193,7 @@ function DashboardPage() {
         <header className="flex flex-wrap items-end justify-between gap-4">
           <div>
             <p className="text-xs text-muted-foreground font-medium">Centro de Inteligência</p>
-            <h1 className="text-3xl md:text-4xl font-display font-bold mt-1">Anúncios</h1>
+            <h1 className="text-2xl sm:text-3xl md:text-4xl font-display font-bold mt-1">Anúncios</h1>
           </div>
           <div className="flex items-center gap-2 text-xs">
             <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-accent/70 border border-border text-foreground/70 font-medium">
@@ -327,7 +327,7 @@ function DashboardPage() {
         </GlassCard>
 
         {/* KPIs */}
-        <div className="grid grid-cols-2 lg:grid-cols-6 gap-3">
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
           <Kpi icon={Zap} label="Impressões" value={formatCompact(totals.impressions)} delta="+12.4%" />
           <Kpi icon={MousePointerClick} label="Cliques" value={formatCompact(totals.clicks)} delta="+8.1%" />
           <Kpi icon={Heart} label="Engajamento Social" value={formatCompact(totals.social)} delta="+24.6%" />

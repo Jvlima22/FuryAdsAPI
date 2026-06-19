@@ -13,6 +13,7 @@
 <script>
   // Brand assets recriados como SVG inline (logos) + placeholder p/ as
   // screenshots de produto (que truncam no canal DesignSync, >192KiB).
+  // As chaves batem com window.__resources usado pelos componentes.
   function tglLogo(stroke, text) {
     var svg = "<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 190 44'>"
       + "<g fill='none' stroke='" + stroke + "' stroke-width='4'>"
@@ -42,43 +43,62 @@
 <script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" crossorigin="anonymous"></script>
 <script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" crossorigin="anonymous"></script>
 
+<!-- Peças (cada arquivo declara seus componentes no escopo global) -->
 <script type="text/babel" src="primitives.jsx"></script>
 <script type="text/babel" src="posts.jsx"></script>
 <script type="text/babel" src="carousels.jsx"></script>
-<script type="text/babel" src="presentation.jsx"></script>
 <script type="text/babel" src="reels.jsx"></script>
+<script type="text/babel" src="presentation.jsx"></script>
 
+<!--
+  Layout em documento que flui (mesmo padrão do board da Vintech): cada peça
+  vive numa .vt-frame com zoom:0.3 dentro de uma .vt-row rolável horizontal,
+  agrupadas por seção. Diferente de um canvas com viewport fixo (100vh +
+  overflow:hidden), aqui o <body> cresce com o conteúdo — então o preview da
+  galeria (ClaudeDesignPreview) mede a altura real e mostra TODAS as artes, e
+  o painel "Designs" enumera cada .vt-frame[data-name].
+-->
 <style>
-  html, body { margin: 0; padding: 0; background: #e7e3db; font-family: 'DM Sans', sans-serif; }
+  html, body { margin: 0; padding: 0; background: hsl(30 20% 88%); font-family: 'DM Sans', sans-serif; }
   #root { display: flex; flex-direction: column; align-items: stretch; gap: 56px; padding: 56px 0; }
   .vt-group { display: flex; flex-direction: column; align-items: stretch; gap: 16px; }
   .vt-group-title { font-family: 'Space Grotesk', sans-serif; font-weight: 700; font-size: 30px; color: #041020; letter-spacing: -0.01em; padding: 0 44px; }
-  .vt-row { display: flex; flex-wrap: nowrap; gap: 28px; align-items: flex-start; overflow-x: auto; overflow-y: hidden; scroll-snap-type: x proximity; padding: 0 44px 18px; }
-  .vt-row::-webkit-scrollbar { height: 10px; }
-  .vt-row::-webkit-scrollbar-thumb { background: rgba(0,0,0,0.22); border-radius: 8px; }
-  .vt-row::-webkit-scrollbar-track { background: transparent; }
+  .vt-group-sub { font-family: 'DM Sans', sans-serif; font-weight: 400; font-size: 15px; color: rgba(4,16,32,0.55); padding: 0 44px; margin-top: -8px; }
+  /* scroll horizontal mantido, mas SEM a barra visível embaixo do carrossel */
+  .vt-row { display: flex; flex-wrap: nowrap; gap: 28px; align-items: flex-start; overflow-x: auto; overflow-y: hidden; scroll-snap-type: x proximity; padding: 0 0 18px 44px; scrollbar-width: none; -ms-overflow-style: none; }
+  /* Espaçador final: o padding-right de um container de scroll flex é "comido"
+     pelo navegador ao rolar até o fim, cortando o último card. Um item flex
+     vazio entra na área de scroll e garante a folga à direita. */
+  .vt-row::after { content: ""; flex: 0 0 44px; }
+  .vt-row::-webkit-scrollbar { display: none; }
   .vt-frame { zoom: 0.3; overflow: hidden; box-shadow: 0 14px 48px -14px rgba(0,0,0,0.28); border-radius: 8px; flex-shrink: 0; background: #fff; scroll-snap-align: start; }
 </style>
 </head>
 <body>
 <div id="root"></div>
+
 <script type="text/babel">
   const W = window;
-  const POST = [1080, 1350];
+
+  // ====== Sizes ======
+  const POST = [1080, 1350];   // posts + carrosséis
   const REEL = [1500, 1920];
   const STORY = [1080, 1920];
 
-  const Frame = ({ size, name }) => (
-    <div className="vt-frame" style={{ width: size[0], height: size[1] }} data-name={name}>
-      {React.createElement(W[name])}
+  // Renderiza uma peça pelo nome do componente global; data-name = rótulo
+  // legível (lido pelo painel "Designs" / nome do arquivo no download).
+  const Frame = ({ size, comp, label }) => (
+    <div className="vt-frame" style={{ width: size[0], height: size[1] }} data-name={label}>
+      {React.createElement(W[comp])}
     </div>
   );
 
-  const Group = ({ title, names, size }) => (
+  const Group = ({ title, subtitle, size, items }) => (
     <div className="vt-group">
       <div className="vt-group-title">{title}</div>
+      {subtitle && <div className="vt-group-sub">{subtitle}</div>}
       <div className="vt-row">
-        {names.map((n) => <Frame key={n} size={size} name={n} />)}
+        {items.map(([comp, label]) => <Frame key={comp} size={size} comp={comp} label={label} />)}
       </div>
     </div>
   );
@@ -86,16 +106,86 @@
   function App() {
     return (
       <>
-        <Group title="Apresentação · Posts unitários" size={POST} names={['PostP1', 'PostP2', 'PostP3']} />
-        <Group title="Apresentação · Carrossel E — Conheça a TGL" size={POST} names={['E1', 'E2', 'E3', 'E4', 'E5', 'E6', 'E7']} />
-        <Group title="Apresentação · Carrossel F — O que entregamos" size={POST} names={['F1', 'F2', 'F3', 'F4', 'F5', 'F6']} />
-        <Group title="Posts unitários" size={POST} names={['Post1', 'Post2', 'Post3', 'Post4', 'Post5', 'Post6', 'Post7']} />
-        <Group title="Carrossel A — Preço secreto da planilha" size={POST} names={['A1', 'A2', 'A3', 'A4', 'A5', 'A6']} />
-        <Group title="Carrossel B — Sua ideia vira um SaaS?" size={POST} names={['B1', 'B2', 'B3', 'B4', 'B5', 'B6', 'B7']} />
-        <Group title="Carrossel C — 5 processos pra automatizar" size={POST} names={['C1', 'C2', 'C3', 'C4', 'C5', 'C6', 'C7']} />
-        <Group title="Carrossel D — Bastidores (TLS · Captu · Vintech)" size={POST} names={['D1', 'D2', 'D3', 'D4', 'D5', 'D6']} />
-        <Group title="Reels — Storyboards" size={REEL} names={['Reel1', 'Reel2', 'Reel3', 'Reel4', 'Reel5', 'Reel6']} />
-        <Group title="Stories — Sequência" size={STORY} names={['Story1', 'Story2', 'Story3', 'Story4']} />
+        <Group title="Apresentação · Posts unitários"
+          subtitle="3 peças · 1080×1350 · Quem somos · O que fazemos · Por que TGL" size={POST}
+          items={[
+            ['PostP1', 'P1 · Quem somos (manifesto)'],
+            ['PostP2', 'P2 · O que fazemos (4 frentes)'],
+            ['PostP3', 'P3 · Por que TGL (prova + diferencial)'],
+          ]} />
+
+        <Group title="Apresentação · Carrossel E — Conheça a TGL"
+          subtitle="7 slides · Institucional · CTA: EVOLUIR" size={POST}
+          items={[
+            ['E1', 'E01 · Capa'], ['E2', 'E02 · Tese'], ['E3', 'E03 · O que fazemos'],
+            ['E4', 'E04 · Como trabalhamos'], ['E5', 'E05 · Provas no ar'],
+            ['E6', 'E06 · Para quem'], ['E7', 'E07 · CTA'],
+          ]} />
+
+        <Group title="Apresentação · Carrossel F — O que a gente entrega"
+          subtitle="6 slides · Catálogo de serviços · CTA: EVOLUIR" size={POST}
+          items={[
+            ['F1', 'F01 · Capa'], ['F2', 'F02 · Software sob medida'], ['F3', 'F03 · Automação'],
+            ['F4', 'F04 · Dashboards & BI'], ['F5', 'F05 · Produtos SaaS'], ['F6', 'F06 · CTA'],
+          ]} />
+
+        <Group title="Parte 1 — Posts unitários"
+          subtitle="7 peças · 1080×1350 · Alívio cômico + Manual prático + Autoridade" size={POST}
+          items={[
+            ['Post1', '01 · Meme tweet (WhatsApp + Planilha)'],
+            ['Post2', '02 · Quote-tese (automação sob medida)'],
+            ['Post3', '03 · Antes vs Depois (processo)'],
+            ['Post4', '04 · Bastidor (3 SaaS de prova)'],
+            ['Post5', '05 · Dado (8h/semana)'],
+            ['Post6', '06 · Meme tipográfico (você há 3 anos)'],
+            ['Post7', '07 · Quote-marca (software house)'],
+          ]} />
+
+        <Group title="Carrossel A — Preço secreto da planilha"
+          subtitle="6 slides · Manual prático · CTA: SOFTWARE" size={POST}
+          items={[
+            ['A1', 'A01 · Capa'], ['A2', 'A02 · Erro/digitação'], ['A3', 'A03 · Retrabalho'],
+            ['A4', 'A04 · Dependência'], ['A5', 'A05 · Zero visão'], ['A6', 'A06 · CTA'],
+          ]} />
+
+        <Group title="Carrossel B — Sua ideia vira um SaaS lucrativo?"
+          subtitle="7 slides · Processo · CTA: EVOLUIR" size={POST}
+          items={[
+            ['B1', 'B01 · Capa'], ['B2', 'B02 · Dor real'], ['B3', 'B03 · Mercado'],
+            ['B4', 'B04 · MVP enxuto'], ['B5', 'B05 · Validação'], ['B6', 'B06 · Escala'], ['B7', 'B07 · CTA'],
+          ]} />
+
+        <Group title="Carrossel C — 5 processos para automatizar hoje"
+          subtitle="7 slides · Manual prático · CTA: SOFTWARE" size={POST}
+          items={[
+            ['C1', 'C01 · Capa'], ['C2', 'C02 · Agendamento'], ['C3', 'C03 · Cobrança'],
+            ['C4', 'C04 · Atendimento'], ['C5', 'C05 · Relatórios'], ['C6', 'C06 · Cadastro'], ['C7', 'C07 · CTA'],
+          ]} />
+
+        <Group title="Carrossel D — Bastidores · TLS Barber, Captu, Vintech"
+          subtitle="6 slides · Prova · CTA: EVOLUIR" size={POST}
+          items={[
+            ['D1', 'D01 · Capa'], ['D2', 'D02 · TLS Barber'], ['D3', 'D03 · Captu *'],
+            ['D4', 'D04 · Vintech'], ['D5', 'D05 · A lição'], ['D6', 'D06 · CTA'],
+          ]} />
+
+        <Group title="Parte 3 — Reels · Storyboards"
+          subtitle="6 reels · 1080×1920 · Storyboard com 4 keyframes + roteiro + áudio + CTA" size={REEL}
+          items={[
+            ['Reel1', 'Reel 01 · Malabarismo (humor)'],
+            ['Reel2', 'Reel 02 · Bastidores (autoridade)'],
+            ['Reel3', 'Reel 03 · 3 processos (educativo)'],
+            ['Reel4', 'Reel 04 · Antes/Depois'],
+            ['Reel5', 'Reel 05 · ASMR tech (faceless)'],
+            ['Reel6', 'Reel 06 · Planilha vingativa'],
+          ]} />
+
+        <Group title="Stories — Sequência de 4 frames"
+          subtitle="Engajamento + qualificação · 1080×1920 · CTA: SOFTWARE / EVOLUIR" size={STORY}
+          items={[
+            ['Story1', '01 · Enquete'], ['Story2', '02 · Identificação'],
+            ['Story3', '03 · Prova (3 SaaS)'], ['Story4', '04 · Caixa de perguntas'],
+          ]} />
       </>
     );
   }

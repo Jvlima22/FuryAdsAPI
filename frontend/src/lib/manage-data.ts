@@ -89,12 +89,23 @@ export type Audience = Metrics & {
   sizeEstimate: number;
 };
 
+/** Anúncio = um criativo (imagem ou board do Claude Design) anexado a um grupo/conjunto. */
+export type Ad = Metrics & {
+  id: string;
+  name: string;
+  status: EntityStatus;
+  creativeKind: "image" | "board";
+  creativeSrc: string; // caminho em /public (SVG ou HTML)
+  thumbTone?: "wine" | "neutral";
+};
+
 export type AdGroup = Metrics & {
   id: string;
   name: string;
   status: EntityStatus;
   defaultCpcMicros: number;
   keywords: Keyword[];
+  ads?: Ad[]; // criativos anexados (opcional p/ compat com estado persistido antigo)
 };
 
 export type AdSet = Metrics & {
@@ -108,6 +119,7 @@ export type AdSet = Metrics & {
   demographics: Demographics;
   interests: string[];
   audiences: Audience[];
+  ads?: Ad[]; // criativos anexados (opcional p/ compat com estado persistido antigo)
 };
 
 export type Campaign = Metrics & {
@@ -733,6 +745,7 @@ function buildAdGroups(bc: BaseCampaign, accountId: string, pools: BrandPools): 
       status: rng(gbase) > 0.85 ? "PAUSED" : "ENABLED",
       defaultCpcMicros: Math.round(120_000 + rng(gbase + 7) * 400_000),
       keywords,
+      ads: [],
       ...m,
     };
   });
@@ -759,6 +772,7 @@ function buildAdSets(bc: BaseCampaign, accountId: string, pools: BrandPools): Ad
       demographics: buildDemographics(sbase),
       interests: interests.length ? interests : [pools.interests[si % pools.interests.length]],
       audiences,
+      ads: [],
       ...m,
     };
   });

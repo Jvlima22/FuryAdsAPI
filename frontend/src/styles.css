@@ -2,7 +2,7 @@
 @import "tw-animate-css";
 
 /*
-  Fury Ads — design system.
+  Metrik — design system.
   Light glassmorphism with violet/cyan accents. The shadcn/ui primitives in
   src/components/ui consume the semantic tokens below (bg-background,
   text-muted-foreground, border-border, ...); the app components additionally

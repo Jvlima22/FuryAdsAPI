@@ -28,9 +28,9 @@ function isoDaysAgo(n: number): string {
 export const Route = createFileRoute("/violations")({
   head: () => ({
     meta: [
-      { title: "Violações · Fury Ads" },
+      { title: "Violações · Metrik" },
       { name: "description", content: "Relatório de evidências, AI Policy Assistant e ações de compliance para violações detectadas." },
-      { property: "og:title", content: "Violações · Fury Ads" },
+      { property: "og:title", content: "Violações · Metrik" },
       { property: "og:description", content: "Investigue cada violação com evidência visual e sugestões da IA." },
     ],
   }),
@@ -98,8 +98,8 @@ function ViolationsPage() {
         <header className="flex flex-wrap items-end justify-between gap-4">
           <div>
             <p className="text-xs text-muted-foreground font-medium">Compliance</p>
-            <h1 className="text-3xl md:text-4xl font-display font-bold mt-1 flex items-center gap-3">
-              <ShieldAlert className="size-7 text-violet" />
+            <h1 className="text-2xl sm:text-3xl md:text-4xl font-display font-bold mt-1 flex items-center gap-2 sm:gap-3">
+              <ShieldAlert className="size-6 sm:size-7 text-violet" />
               Violações
             </h1>
             <p className="text-muted-foreground text-sm mt-1 flex items-center gap-1.5">

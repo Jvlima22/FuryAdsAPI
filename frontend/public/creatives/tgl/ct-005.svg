@@ -1,0 +1,45 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 675" font-family="'Space Grotesk','DM Sans','Segoe UI',system-ui,sans-serif">
+  <defs>
+    <pattern id="gridl" width="44" height="44" patternUnits="userSpaceOnUse">
+      <path d="M44 0H0V44" fill="none" stroke="#041020" stroke-width="1" opacity="0.05"/>
+    </pattern>
+  </defs>
+  <rect width="1200" height="675" fill="#F8F9FA"/>
+  <rect width="1200" height="675" fill="url(#gridl)"/>
+
+  <!-- antes -> depois motif -->
+  <g transform="translate(905,250)">
+    <!-- caos: scribble caderno -->
+    <rect x="0" y="0" width="120" height="150" rx="10" fill="#fff" stroke="#CDCFD2" stroke-width="2"/>
+    <g stroke="#9aa1a8" stroke-width="3" stroke-linecap="round">
+      <path d="M20 34 h80 M20 58 h60 M20 82 h84 M20 106 h48"/>
+    </g>
+    <!-- arrow -->
+    <path d="M150 75 h70" stroke="#0F6CBD" stroke-width="6" stroke-linecap="round"/>
+    <path d="M214 60 l20 15 l-20 15" fill="none" stroke="#0F6CBD" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/>
+    <!-- depois: app navy -->
+    <rect x="250" y="0" width="120" height="150" rx="10" fill="#041020"/>
+    <rect x="266" y="22" width="88" height="14" rx="7" fill="#0F6CBD"/>
+    <rect x="266" y="50" width="64" height="10" rx="5" fill="#3a5a78"/>
+    <rect x="266" y="72" width="88" height="10" rx="5" fill="#3a5a78"/>
+    <path d="M276 116 l14 14 l24 -30" fill="none" stroke="#0F6CBD" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/>
+  </g>
+
+  <text x="80" y="92" fill="#5A5E64" font-size="20" font-weight="600" letter-spacing="4">MANUAL PRÁTICO · 05</text>
+  <g transform="translate(1040,70)">
+    <rect x="0" y="0" width="80" height="34" rx="8" fill="#041020"/>
+    <text x="40" y="24" fill="#fff" font-size="20" font-weight="700" text-anchor="middle" letter-spacing="2">TGL</text>
+  </g>
+
+  <text x="80" y="320" fill="#041020" font-size="64" font-weight="700" letter-spacing="-2">Do caos no caderno</text>
+  <text x="80" y="390" fill="#041020" font-size="64" font-weight="700" letter-spacing="-2">ao</text>
+  <text x="172" y="390" fill="#0F6CBD" font-size="64" font-weight="700" letter-spacing="-2">processo digital.</text>
+
+  <text x="80" y="470" fill="#5A5E64" font-size="26" font-weight="400">Digitalizamos e automatizamos seus processos sob medida.</text>
+
+  <text x="80" y="628" fill="#9aa1a8" font-size="20" font-weight="600" letter-spacing="2">tgl-solutions.com.br</text>
+  <g transform="translate(0,612)">
+    <rect x="980" y="2" width="36" height="2" fill="#0F6CBD"/>
+    <text x="1120" y="9" fill="#5A5E64" font-size="20" font-weight="600" text-anchor="end">Falar com a TGL</text>
+  </g>
+</svg>

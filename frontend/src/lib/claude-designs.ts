@@ -11,6 +11,8 @@
  * Refreshing / adding a project = re-running the agent sync.
  */
 
+import type { BrandKey } from "./accounts";
+
 export type ClaudeDesign = {
   id: string;
   title: string;
@@ -23,6 +25,10 @@ export type ClaudeDesign = {
 export type ClaudeDesignProject = {
   projectId: string;
   name: string;
+  /** Marca/conta dona deste projeto — usado para escopar os criativos por conta. */
+  brandKey?: BrandKey;
+  /** Data de criação/sync do board (ISO). Exibida no detalhe de cada peça. */
+  createdAt?: string;
   designs: ClaudeDesign[];
 };
 
@@ -30,6 +36,8 @@ export const claudeDesignProjects: ClaudeDesignProject[] = [
   {
     projectId: "514627cc-a1e1-4f38-8249-06abe1dd9667",
     name: "Vintech Design System",
+    brandKey: "vintech",
+    createdAt: "2026-02-20",
     designs: [
       {
         id: "carousels",
@@ -43,6 +51,8 @@ export const claudeDesignProjects: ClaudeDesignProject[] = [
   {
     projectId: "e4fb29b0-c934-414f-84aa-6a89b851b72b",
     name: "Instagram Vintech",
+    brandKey: "vintech",
+    createdAt: "2026-02-20",
     designs: [
       {
         id: "board",
@@ -56,6 +66,8 @@ export const claudeDesignProjects: ClaudeDesignProject[] = [
   {
     projectId: "8094ee90-4608-4bf2-8a57-e7de44e72610",
     name: "TGL Posts Instagram",
+    brandKey: "tgl",
+    createdAt: "2026-02-20",
     designs: [
       {
         id: "board",

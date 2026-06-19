@@ -10,7 +10,7 @@ import {
 
 /**
  * In-app activity timeline + the "AI Policy Assistant" knowledge base.
- * Pure mock data — mirrors the kind of events the Fury Ads worker would emit
+ * Pure mock data — mirrors the kind of events the Metrik worker would emit
  * (violations detected, ads auto-paused, jobs finishing) and the policy
  * rationale shown when a user asks "why was this blocked?".
  */

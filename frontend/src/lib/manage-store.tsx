@@ -12,6 +12,7 @@
  */
 import { createContext, useContext, useEffect, useState, type ReactNode } from "react";
 import type { AdAccount } from "./accounts";
+import type { Creative } from "./creatives";
 import {
   buildAccountTree,
   recalcCampaign,
@@ -24,6 +25,7 @@ import {
   type AdSet,
   type Keyword,
   type Audience,
+  type Ad,
   type GeoTarget,
   type Demographics,
   type EntityStatus,
@@ -54,6 +56,15 @@ export type NewMetaCampaign = {
   budgetDailyMicros: number;
 };
 
+/** Anúncio para geração em lote (a partir de peças do board). */
+export type GeneratedAd = {
+  name: string;
+  /** Caminho em /public (SVG/HTML) ou data-URL (thumb rasterizado da peça). */
+  src: string;
+  kind?: "image" | "board";
+  thumbTone?: "wine" | "neutral";
+};
+
 type ManageContextValue = {
   getCampaigns: (account: AdAccount) => Campaign[];
   getCampaign: (account: AdAccount, campaignId: string) => Campaign | undefined;
@@ -61,6 +72,11 @@ type ManageContextValue = {
   // Campanha
   createGoogleCampaign: (account: AdAccount, input: NewGoogleCampaign) => string;
   createMetaCampaign: (account: AdAccount, input: NewMetaCampaign) => string;
+  /** Cria uma campanha (Google ou Meta, conforme a conta) já com um grupo/conjunto de anúncios. */
+  createCampaignWithAds: (
+    account: AdAccount,
+    input: { name: string; ads: GeneratedAd[]; budgetDailyMicros?: number },
+  ) => string;
   updateCampaign: (account: AdAccount, campaignId: string, patch: Partial<Campaign>) => void;
   setCampaignStatus: (account: AdAccount, campaignId: string, status: EntityStatus) => void;
   deleteCampaign: (account: AdAccount, campaignId: string) => void;
@@ -91,6 +107,11 @@ type ManageContextValue = {
   addAudience: (account: AdAccount, campaignId: string, setId: string, name: string, type: Audience["type"]) => void;
   removeAudience: (account: AdAccount, campaignId: string, setId: string, audienceId: string) => void;
   toggleAudience: (account: AdAccount, campaignId: string, setId: string, audienceId: string) => void;
+
+  // Anúncios / criativos (dentro do grupo Google OU conjunto Meta, via parentId)
+  attachCreative: (account: AdAccount, campaignId: string, parentId: string, creative: Creative) => void;
+  removeAd: (account: AdAccount, campaignId: string, parentId: string, adId: string) => void;
+  toggleAdStatus: (account: AdAccount, campaignId: string, parentId: string, adId: string) => void;
 
   // Geolocalização (Google: campanha · Meta: conjunto via setId)
   addGeo: (account: AdAccount, campaignId: string, geo: { kind: GeoKind; name: string }, setId?: string) => void;
@@ -219,6 +240,91 @@ export function ManageProvider({ children }: { children: ReactNode }) {
       adGroups: [],
       adSets: [],
     });
+    update(account, (list) => [campaign, ...list]);
+    return id;
+  }
+
+  function createCampaignWithAds(
+    account: AdAccount,
+    input: { name: string; ads: GeneratedAd[]; budgetDailyMicros?: number },
+  ): string {
+    const budget = input.budgetDailyMicros ?? 50_000_000;
+    const isGoogle = account.platform === "GOOGLE_ADS";
+    const id = makeId(isGoogle ? "g-camp" : "m-camp");
+    const parentId = makeId(isGoogle ? `${id}-ag` : `${id}-as`);
+    const name = input.name.trim() || "Nova campanha";
+    const ads: Ad[] = input.ads.map((a, i) => ({
+      id: makeId(`${parentId}-ad-${i}`),
+      name: a.name,
+      status: "ENABLED",
+      creativeKind: a.kind ?? "image",
+      creativeSrc: a.src,
+      thumbTone: a.thumbTone,
+      ...ZERO,
+    }));
+
+    const campaign: Campaign = isGoogle
+      ? recalcCampaign({
+          id,
+          platform: "GOOGLE_ADS",
+          name,
+          status: "PAUSED",
+          channelType: "Demand Gen",
+          budgetDailyMicros: budget,
+          spentTodayMicros: 0,
+          ...ZERO,
+          ctr: 0,
+          averageCpcMicros: 0,
+          googleType: "DEMAND_GEN",
+          googleBidStrategy: "MAXIMIZE_CONVERSIONS",
+          geoTargets: [],
+          adGroups: [
+            recalcGroup({
+              id: parentId,
+              name,
+              status: "ENABLED",
+              defaultCpcMicros: 200_000,
+              keywords: [],
+              ads,
+              ...ZERO,
+            }),
+          ],
+          adSets: [],
+        })
+      : recalcCampaign({
+          id,
+          platform: "META_ADS",
+          name,
+          status: "PAUSED",
+          channelType: "Engajamento",
+          budgetDailyMicros: budget,
+          spentTodayMicros: 0,
+          ...ZERO,
+          ctr: 0,
+          averageCpcMicros: 0,
+          objective: "OUTCOME_ENGAGEMENT",
+          budgetMode: "CBO",
+          metaBidStrategy: "LOWEST_COST",
+          geoTargets: [],
+          adGroups: [],
+          adSets: [
+            recalcSet({
+              id: parentId,
+              name,
+              status: "ENABLED",
+              budgetDailyMicros: budget,
+              optimizationGoal: "OFFSITE_CONVERSIONS",
+              bidStrategy: "LOWEST_COST",
+              geoTargets: [],
+              demographics: emptyDemographics(),
+              interests: [],
+              audiences: [],
+              ads,
+              ...ZERO,
+            }),
+          ],
+        });
+
     update(account, (list) => [campaign, ...list]);
     return id;
   }
@@ -365,6 +471,38 @@ export function ManageProvider({ children }: { children: ReactNode }) {
     );
   }
 
+  // ── Anúncios / criativos ────────────────────────────────────────────────────
+  // parentId é um grupo (Google) ou conjunto (Meta) — escolhido pela plataforma
+  // da campanha. Ads carregam métricas próprias (zeradas) e NÃO entram no
+  // roll-up do grupo/conjunto (recalc continua somando keywords/públicos).
+  function mapAdParent(c: Campaign, parentId: string, fn: (ads: Ad[]) => Ad[]): Campaign {
+    return c.platform === "GOOGLE_ADS"
+      ? mapGroup(c, parentId, (g) => ({ ...g, ads: fn(g.ads ?? []) }))
+      : mapSet(c, parentId, (s) => ({ ...s, ads: fn(s.ads ?? []) }));
+  }
+  function attachCreative(account: AdAccount, campaignId: string, parentId: string, creative: Creative) {
+    const ad: Ad = {
+      id: makeId(`${parentId}-ad`),
+      name: creative.title,
+      status: "ENABLED",
+      creativeKind: creative.kind,
+      creativeSrc: creative.src,
+      thumbTone: creative.thumbTone,
+      ...ZERO,
+    };
+    update(account, (list) => mapCampaign(list, campaignId, (c) => mapAdParent(c, parentId, (ads) => [ad, ...ads])));
+  }
+  function removeAd(account: AdAccount, campaignId: string, parentId: string, adId: string) {
+    update(account, (list) => mapCampaign(list, campaignId, (c) => mapAdParent(c, parentId, (ads) => ads.filter((a) => a.id !== adId))));
+  }
+  function toggleAdStatus(account: AdAccount, campaignId: string, parentId: string, adId: string) {
+    update(account, (list) =>
+      mapCampaign(list, campaignId, (c) =>
+        mapAdParent(c, parentId, (ads) => ads.map((a) => (a.id === adId ? { ...a, status: a.status === "ENABLED" ? "PAUSED" : "ENABLED" } : a))),
+      ),
+    );
+  }
+
   // ── Geolocalização ──────────────────────────────────────────────────────────
   function makeGeo(input: { kind: GeoKind; name: string }): GeoTarget {
     return { id: makeId("geo"), kind: input.kind, name: input.name.trim(), reach: 0, excluded: false };
@@ -407,6 +545,7 @@ export function ManageProvider({ children }: { children: ReactNode }) {
         getCampaign,
         createGoogleCampaign,
         createMetaCampaign,
+        createCampaignWithAds,
         updateCampaign,
         setCampaignStatus,
         deleteCampaign,
@@ -429,6 +568,9 @@ export function ManageProvider({ children }: { children: ReactNode }) {
         addAudience,
         removeAudience,
         toggleAudience,
+        attachCreative,
+        removeAd,
+        toggleAdStatus,
         addGeo,
         removeGeo,
         toggleGeoExcluded,

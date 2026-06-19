@@ -65,7 +65,7 @@ import { entityStatusMeta, segmentationCount, type Campaign, type EntityStatus }
 export const Route = createFileRoute("/manage/")({
   head: () => ({
     meta: [
-      { title: "Gestão de Campanhas · Fury Ads" },
+      { title: "Gestão de Campanhas · Metrik" },
       { name: "description", content: "Crie, pause, edite e exclua campanhas do Google Ads e Meta Ads." },
     ],
   }),

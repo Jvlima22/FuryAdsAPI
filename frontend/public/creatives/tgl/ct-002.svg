@@ -1,0 +1,45 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 675" font-family="'Space Grotesk','DM Sans','Segoe UI',system-ui,sans-serif">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#041020"/>
+      <stop offset="0.55" stop-color="#06223f"/>
+      <stop offset="1" stop-color="#03101e"/>
+    </linearGradient>
+    <radialGradient id="glow" cx="0.85" cy="0.75" r="0.5">
+      <stop offset="0" stop-color="#0F6CBD" stop-opacity="0.5"/>
+      <stop offset="1" stop-color="#0F6CBD" stop-opacity="0"/>
+    </radialGradient>
+    <pattern id="grid" width="44" height="44" patternUnits="userSpaceOnUse">
+      <path d="M44 0H0V44" fill="none" stroke="#0F6CBD" stroke-width="1" opacity="0.07"/>
+    </pattern>
+  </defs>
+  <rect width="1200" height="675" fill="url(#bg)"/>
+  <rect width="1200" height="675" fill="url(#grid)"/>
+  <rect width="1200" height="675" fill="url(#glow)"/>
+
+  <!-- chaos -> order motif: stacked offset cards -->
+  <g opacity="0.9">
+    <rect x="980" y="170" width="150" height="96" rx="12" fill="none" stroke="#3a5a78" stroke-width="2" transform="rotate(-8 1055 218)"/>
+    <rect x="965" y="200" width="150" height="96" rx="12" fill="none" stroke="#3a5a78" stroke-width="2" transform="rotate(6 1040 248)"/>
+    <rect x="990" y="235" width="150" height="96" rx="12" fill="#0F6CBD"/>
+    <path d="M1030 283 l16 16 l28 -34" fill="none" stroke="#fff" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/>
+  </g>
+
+  <text x="80" y="92" fill="#5A8FC4" font-size="20" font-weight="600" letter-spacing="4">DOR REAL · 02</text>
+  <g transform="translate(1040,70)">
+    <rect x="0" y="0" width="80" height="34" rx="8" fill="#0F6CBD"/>
+    <text x="40" y="24" fill="#fff" font-size="20" font-weight="700" text-anchor="middle" letter-spacing="2">TGL</text>
+  </g>
+
+  <text x="80" y="300" fill="#ffffff" font-size="62" font-weight="700" letter-spacing="-2">Pare de depender da</text>
+  <text x="80" y="368" fill="#ffffff" font-size="62" font-weight="700" letter-spacing="-2">memória da recepcionista.</text>
+  <text x="80" y="466" fill="#0F6CBD" font-size="62" font-weight="700" letter-spacing="-2">Automatize o que trava.</text>
+
+  <text x="80" y="524" fill="#CDCFD2" font-size="26" font-weight="400">Sem mais 14 grupos de WhatsApp e planilha desatualizada.</text>
+
+  <text x="80" y="628" fill="#5A5E64" font-size="20" font-weight="600" letter-spacing="2">tgl-solutions.com.br</text>
+  <g transform="translate(0,612)">
+    <rect x="944" y="2" width="36" height="2" fill="#0F6CBD"/>
+    <text x="1120" y="9" fill="#CDCFD2" font-size="20" font-weight="600" text-anchor="end">Agendar diagnóstico</text>
+  </g>
+</svg>

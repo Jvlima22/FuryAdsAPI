@@ -11,9 +11,11 @@ import { useEffect, type ReactNode } from "react";
 
 import appCss from "../styles.css?url";
 import { reportLovableError } from "../lib/lovable-error-reporting";
+import { AuthProvider } from "../lib/auth-context";
 import { AccountProvider } from "../lib/account-context";
 import { ManageProvider } from "../lib/manage-store";
 import { TooltipProvider } from "@/components/ui/tooltip";
+import { Toaster } from "@/components/ui/sonner";
 import "@fontsource/space-grotesk/400.css";
 import "@fontsource/space-grotesk/600.css";
 import "@fontsource/space-grotesk/700.css";
@@ -86,10 +88,10 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "Fury Ads · Control Center" },
-      { name: "description", content: "Painel glassmorphism para monitorar campanhas e violações da Fury Ads API." },
-      { name: "author", content: "Fury Ads" },
-      { property: "og:title", content: "Fury Ads · Control Center" },
+      { title: "Metrik · Control Center" },
+      { name: "description", content: "Painel glassmorphism para monitorar campanhas e violações da Metrik API." },
+      { name: "author", content: "Metrik" },
+      { property: "og:title", content: "Metrik · Control Center" },
       { property: "og:description", content: "Painel glassmorphism para monitorar campanhas e violações." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
@@ -126,14 +128,17 @@ function RootComponent() {
 
   return (
     <QueryClientProvider client={queryClient}>
-      <AccountProvider>
-        <ManageProvider>
-          <TooltipProvider delayDuration={200}>
-            {/* Required: nested routes render here. Removing <Outlet /> breaks all child routes. */}
-            <Outlet />
-          </TooltipProvider>
-        </ManageProvider>
-      </AccountProvider>
+      <AuthProvider>
+        <AccountProvider>
+          <ManageProvider>
+            <TooltipProvider delayDuration={200}>
+              {/* Required: nested routes render here. Removing <Outlet /> breaks all child routes. */}
+              <Outlet />
+              <Toaster richColors position="top-right" />
+            </TooltipProvider>
+          </ManageProvider>
+        </AccountProvider>
+      </AuthProvider>
     </QueryClientProvider>
   );
 }

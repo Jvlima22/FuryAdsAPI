@@ -1,0 +1,46 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 675" font-family="'Space Grotesk','DM Sans','Segoe UI',system-ui,sans-serif">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#041020"/>
+      <stop offset="0.55" stop-color="#06223f"/>
+      <stop offset="1" stop-color="#03101e"/>
+    </linearGradient>
+    <radialGradient id="glow" cx="0.84" cy="0.38" r="0.46">
+      <stop offset="0" stop-color="#0F6CBD" stop-opacity="0.58"/>
+      <stop offset="1" stop-color="#0F6CBD" stop-opacity="0"/>
+    </radialGradient>
+    <pattern id="grid" width="44" height="44" patternUnits="userSpaceOnUse">
+      <path d="M44 0H0V44" fill="none" stroke="#0F6CBD" stroke-width="1" opacity="0.07"/>
+    </pattern>
+  </defs>
+  <rect width="1200" height="675" fill="url(#bg)"/>
+  <rect width="1200" height="675" fill="url(#grid)"/>
+  <rect width="1200" height="675" fill="url(#glow)"/>
+
+  <!-- delivered / checkmark seal motif -->
+  <g transform="translate(1045,268)">
+    <circle r="100" fill="none" stroke="#0F6CBD" stroke-width="2" opacity="0.4"/>
+    <circle r="66" fill="#0F6CBD"/>
+    <path d="M-30 4 l20 22 l40 -50" fill="none" stroke="#fff" stroke-width="9" stroke-linecap="round" stroke-linejoin="round"/>
+    <g stroke="#7db4e6" stroke-width="2" opacity="0.6" fill="none">
+      <path d="M-100 0 h-28 M100 0 h28 M0 -100 v-26 M0 100 v26"/>
+    </g>
+  </g>
+
+  <text x="80" y="92" fill="#5A8FC4" font-size="20" font-weight="600" letter-spacing="4">A ENTREGA · 06</text>
+  <g transform="translate(1040,70)">
+    <rect x="0" y="0" width="80" height="34" rx="8" fill="#0F6CBD"/>
+    <text x="40" y="24" fill="#fff" font-size="20" font-weight="700" text-anchor="middle" letter-spacing="2">TGL</text>
+  </g>
+
+  <text x="80" y="320" fill="#ffffff" font-size="66" font-weight="700" letter-spacing="-2">IA de verdade,</text>
+  <text x="80" y="408" fill="#0F6CBD" font-size="66" font-weight="700" letter-spacing="-2">não enrolação.</text>
+
+  <text x="80" y="486" fill="#CDCFD2" font-size="26" font-weight="400">Soluções sob medida que pagam o próprio investimento.</text>
+
+  <text x="80" y="628" fill="#5A5E64" font-size="20" font-weight="600" letter-spacing="2">tgl-solutions.com.br</text>
+  <g transform="translate(0,612)">
+    <rect x="978" y="2" width="36" height="2" fill="#0F6CBD"/>
+    <text x="1120" y="9" fill="#CDCFD2" font-size="20" font-weight="600" text-anchor="end">Conhecer cases</text>
+  </g>
+</svg>

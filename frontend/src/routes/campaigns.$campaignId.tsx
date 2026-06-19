@@ -22,7 +22,7 @@ import { mockCampaigns, campaignTrend, formatMicros, formatNumber } from "@/lib/
 export const Route = createFileRoute("/campaigns/$campaignId")({
   head: ({ params }) => ({
     meta: [
-      { title: `Campanha ${params.campaignId} · Fury Ads` },
+      { title: `Campanha ${params.campaignId} · Metrik` },
       { name: "description", content: "Detalhes completos de performance, tendências e configuração da campanha." },
     ],
   }),
@@ -85,10 +85,10 @@ function CampaignDetail() {
               </Badge>
               <span className="text-xs text-muted-foreground font-mono">{c.campaignId}</span>
             </div>
-            <h1 className="text-3xl md:text-4xl font-display font-bold">{c.campaignName}</h1>
+            <h1 className="text-2xl sm:text-3xl md:text-4xl font-display font-bold">{c.campaignName}</h1>
             <p className="text-muted-foreground text-sm">Google Ads · Cliente 123-456-7890</p>
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex flex-wrap items-center gap-2">
             <Button variant="outline" size="sm" className="gap-1.5">
               {c.status === "ENABLED" ? <><Pause className="size-3.5" /> Pausar</> : <><Play className="size-3.5" /> Ativar</>}
             </Button>
@@ -188,7 +188,7 @@ function CampaignDetail() {
           <TabsContent value="quality" className="mt-4">
             <GlassCard className="p-6">
               <h3 className="font-display font-semibold mb-4">Quality Score</h3>
-              <div className="grid grid-cols-3 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                 {[
                   { label: "Relevância do anúncio", score: 9 },
                   { label: "Experiência da landing", score: 8 },

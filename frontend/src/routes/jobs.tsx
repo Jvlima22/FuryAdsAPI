@@ -14,9 +14,9 @@ import { useAccount } from "@/lib/account-context";
 export const Route = createFileRoute("/jobs")({
   head: () => ({
     meta: [
-      { title: "Esteira de Jobs · Fury Ads" },
+      { title: "Esteira de Jobs · Metrik" },
       { name: "description", content: "Visualize o pipeline de execução de jobs assíncronos e a timeline de eventos em tempo real." },
-      { property: "og:title", content: "Esteira de Jobs · Fury Ads" },
+      { property: "og:title", content: "Esteira de Jobs · Metrik" },
       { property: "og:description", content: "Pipeline visual e timeline de eventos para operações assíncronas." },
     ],
   }),
@@ -80,8 +80,8 @@ function JobsPage() {
       <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} className="space-y-6">
         <header>
           <p className="text-xs text-muted-foreground font-medium">Operações</p>
-          <h1 className="text-3xl md:text-4xl font-display font-bold mt-1 flex items-center gap-3">
-            <Activity className="size-7 text-violet" />
+          <h1 className="text-2xl sm:text-3xl md:text-4xl font-display font-bold mt-1 flex items-center gap-2 sm:gap-3">
+            <Activity className="size-6 sm:size-7 text-violet" />
             Esteira de Jobs
           </h1>
           <p className="text-muted-foreground text-sm mt-1">Pipeline visual de execução e timeline de eventos do worker</p>
@@ -99,7 +99,7 @@ function JobsPage() {
                 <p className="text-[10px] uppercase tracking-wider font-bold text-violet">Como a esteira funciona</p>
                 <h3 className="font-display font-semibold text-base mt-0.5">Do webhook ao takedown — todo o processo</h3>
                 <p className="text-xs text-muted-foreground mt-1 max-w-2xl">
-                  Quando uma violação é detectada, a Fury Ads API <strong className="text-foreground">enfileira um job
+                  Quando uma violação é detectada, a Metrik API <strong className="text-foreground">enfileira um job
                   assíncrono</strong> de takedown e expõe o status por REST. Esta tela <strong className="text-foreground">captura
                   esse job</strong>: você consulta pelo <code className="font-mono text-[11px] bg-muted px-1 py-0.5 rounded">jobId</code> e
                   ela renderiza o estágio atual no pipeline abaixo.

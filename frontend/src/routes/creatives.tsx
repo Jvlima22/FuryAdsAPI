@@ -12,19 +12,33 @@ import {
   Link2,
   Sparkles,
   Maximize2,
+  Download,
+  Megaphone,
+  CheckCircle2,
 } from "lucide-react";
 import { AppShell } from "@/components/app-shell";
 import { GlassCard } from "@/components/glass-card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogTitle,
+  DialogHeader,
+  DialogDescription,
+} from "@/components/ui/dialog";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { AddAccountDialog } from "@/components/add-account-dialog";
 import { ManageAccountsDialog } from "@/components/manage-accounts-dialog";
+import { CreativeThumb } from "@/components/creative-picker-dialog";
+import { BoardDesignsPanel } from "@/components/board-designs-panel";
 import { fetchFigmaFile, renderFigmaNodes } from "@/lib/figma.server";
 import { relativeTime } from "@/lib/activity";
 import { useAccount } from "@/lib/account-context";
-import { platformMeta } from "@/lib/accounts";
-import { claudeDesignProjects, type ClaudeDesign } from "@/lib/claude-designs";
+import { platformMeta, type AdAccount } from "@/lib/accounts";
+import { creativesForAccount, downloadCreative, type Creative } from "@/lib/creatives";
+import { useManage } from "@/lib/manage-store";
+import { ClaudeDesignPreview } from "@/components/claude-design-preview";
 import { cn } from "@/lib/utils";
 import Lightbox from "yet-another-react-lightbox";
 import Zoom from "yet-another-react-lightbox/plugins/zoom";
@@ -38,7 +52,7 @@ import "yet-another-react-lightbox/plugins/captions.css";
 export const Route = createFileRoute("/creatives")({
   head: () => ({
     meta: [
-      { title: "Criativos · Fury Ads" },
+      { title: "Criativos · Metrik" },
       { name: "description", content: "Galeria de criativos: Figma (ao vivo via API) e Claude Design (renderizado em iframe)." },
     ],
   }),
@@ -53,7 +67,9 @@ function CreativesPage() {
   const { activeAccount } = useAccount();
   const figmaKey = activeAccount.figmaFileKey ?? "";
   const hasFigma = !!figmaKey;
-  const hasClaude = claudeDesignProjects.length > 0;
+  // Criativos da conta (imagens prontas + boards do Claude Design), escopados pela marca.
+  const accountCreatives = useMemo(() => creativesForAccount(activeAccount), [activeAccount]);
+  const hasClaude = accountCreatives.length > 0;
 
   const [source, setSource] = useState<Source>("figma");
   const [selectedPageId, setSelectedPageId] = useState<string | null>(null);
@@ -61,7 +77,9 @@ function CreativesPage() {
   const [visible, setVisible] = useState(PAGE_SIZE);
   const [figmaOpen, setFigmaOpen] = useState(false);
   const [figmaIndex, setFigmaIndex] = useState(0);
-  const [claudeLightbox, setClaudeLightbox] = useState<ClaudeDesign | null>(null);
+  const [boardPreview, setBoardPreview] = useState<Creative | null>(null);
+  const [boardView, setBoardView] = useState<"board" | "designs">("board");
+  const [useCreative, setUseCreative] = useState<Creative | null>(null);
   const [manageOpen, setManageOpen] = useState(false);
   const [addOpen, setAddOpen] = useState(false);
 
@@ -72,6 +90,11 @@ function CreativesPage() {
     setSearch("");
     setVisible(PAGE_SIZE);
   }, [activeAccount.id, activeAccount.figmaFileKey]);
+
+  // Cada board abre na visão "Board"; "Designs" é opt-in por board.
+  useEffect(() => {
+    setBoardView("board");
+  }, [boardPreview?.id]);
 
   const fileQuery = useQuery({
     queryKey: ["figma-file", figmaKey],
@@ -101,16 +124,6 @@ function CreativesPage() {
     staleTime: 5 * 60_000,
   });
   const images = imagesQuery.data ?? {};
-
-  // All Claude Design boards flattened into one grid (side by side), keeping
-  // each board's project name for the card label.
-  const claudeDesigns = useMemo(
-    () =>
-      claudeDesignProjects.flatMap((p) =>
-        p.designs.map((d) => ({ ...d, projectName: p.name })),
-      ),
-    [],
-  );
 
   // Slides fed to the Figma image viewer — only frames whose image is loaded,
   // so prev/next walks the whole visible gallery.
@@ -160,15 +173,15 @@ function CreativesPage() {
               </span>
               {activeAccount.name}
             </p>
-            <h1 className="text-3xl md:text-4xl font-display font-bold mt-1 flex items-center gap-3">
-              <Images className="size-7 text-violet" />
+            <h1 className="text-2xl sm:text-3xl md:text-4xl font-display font-bold mt-1 flex items-center gap-2 sm:gap-3">
+              <Images className="size-6 sm:size-7 text-violet" />
               Criativos
             </h1>
             <p className="text-muted-foreground text-sm mt-1">
               {source === "figma" && fileQuery.data
                 ? <>Figma · <strong className="text-foreground">{fileQuery.data.fileName}</strong> · {totalFrames} telas · atualizado {relativeTime(fileQuery.data.lastModified)}</>
                 : source === "claude"
-                  ? <>Claude Design · <strong className="text-foreground">{claudeDesignProjects.length} projetos</strong> · renderizado ao vivo via iframe</>
+                  ? <>Criativos da conta · <strong className="text-foreground">{accountCreatives.length}</strong> prontos para baixar ou usar na campanha</>
                   : "Designs desta conta"}
             </p>
           </div>
@@ -199,7 +212,7 @@ function CreativesPage() {
                 source === "claude" ? "bg-foreground text-background" : "text-foreground/70 hover:bg-accent",
               )}
             >
-              <Sparkles className="size-3.5" /> Claude Design
+              <Sparkles className="size-3.5" /> Criativos da conta
             </button>
           </div>
         )}
@@ -224,57 +237,52 @@ function CreativesPage() {
           </GlassCard>
         )}
 
-        {/* ================= CLAUDE DESIGN ================= */}
+        {/* ================= CRIATIVOS DA CONTA ================= */}
         {source === "claude" && (
           <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4">
-            {claudeDesigns.map((d, i) => (
-              <motion.button
-                key={d.id + d.projectName}
+            {accountCreatives.map((c, i) => (
+              <motion.div
+                key={c.id}
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: i * 0.04 }}
-                onClick={() => setClaudeLightbox(d)}
-                className="group text-left rounded-2xl overflow-hidden border border-border/70 bg-white hover:-translate-y-0.5 hover:shadow-lg hover:shadow-violet/10 transition-all"
+                className="group flex flex-col rounded-2xl overflow-hidden border border-border/70 bg-white hover:-translate-y-0.5 hover:shadow-lg hover:shadow-violet/10 transition-all"
               >
-                <div
-                  className="relative aspect-[4/3] flex flex-col items-center justify-center gap-3 p-6 text-center"
-                  style={{
-                    background: d.tone === "neutral"
-                      ? "linear-gradient(135deg, #041020 0%, #0a2444 55%, #0F6CBD 100%)"
-                      : "linear-gradient(135deg, hsl(350 70% 11%) 0%, hsl(350 55% 22%) 55%, hsl(350 60% 28%) 100%)",
-                  }}
+                <button
+                  onClick={() => (c.kind === "board" ? setBoardPreview(c) : window.open(c.src, "_blank", "noopener"))}
+                  className="relative block aspect-[4/3] overflow-hidden bg-muted/60 text-left"
                 >
-                  <div className="absolute top-3 left-3 inline-flex items-center gap-1.5 text-[10px] font-semibold uppercase tracking-wider text-white/90 bg-white/10 backdrop-blur-sm px-2 py-1 rounded">
-                    <Sparkles className="size-3" /> Claude Design
-                  </div>
-                  {d.tone === "neutral" ? (
-                    <svg viewBox="0 0 44 44" className="size-12 drop-shadow">
-                      <g fill="none" stroke="#fff" strokeWidth="3.4">
-                        <circle cx="22" cy="22" r="8" />
-                        <circle cx="22" cy="22" r="14" />
-                        <circle cx="22" cy="22" r="20" />
-                      </g>
-                      <circle cx="22" cy="22" r="3.4" fill="#fff" />
-                    </svg>
-                  ) : (
-                    <svg viewBox="0 0 40 40" className="size-12 drop-shadow">
-                      <circle cx="20" cy="20" r="19" fill="hsl(350 55% 22%)" stroke="hsl(43 53% 54%)" strokeWidth="1.2" />
-                      <path d="M12 14 L20 28 L28 14" stroke="hsl(43 53% 54%)" strokeWidth="1.6" fill="none" strokeLinecap="round" strokeLinejoin="round" />
-                      <circle cx="20" cy="22" r="2.2" fill="hsl(43 53% 54%)" />
-                    </svg>
-                  )}
-                  <div>
-                    <p className="font-display font-bold text-lg text-white leading-tight">{d.title}</p>
-                    <p className={cn("text-[11px] mt-1 uppercase tracking-wider", d.tone === "neutral" ? "text-[#9fd0f5]" : "text-[hsl(43_60%_78%)]")}>{d.group}</p>
-                  </div>
-                  <span className="inline-flex items-center gap-1.5 text-xs text-white/80 mt-1 group-hover:gap-2.5 transition-all">
-                    <Maximize2 className="size-3" /> Abrir preview
+                  <CreativeThumb kind={c.kind} src={c.src} tone={c.thumbTone} title={c.title} />
+                  <span className="absolute top-3 left-3 inline-flex items-center gap-1.5 text-[10px] font-semibold uppercase tracking-wider text-white bg-black/55 backdrop-blur-sm px-2 py-1 rounded">
+                    {c.kind === "board" ? <><Sparkles className="size-3" /> Claude Design</> : "Imagem"}
                   </span>
-                  <span className="absolute bottom-3 left-1/2 -translate-x-1/2 text-[10px] text-white/55 truncate max-w-[85%]">
-                    {d.projectName}
+                  <span className="absolute inset-x-0 bottom-0 flex items-center justify-center gap-1.5 bg-gradient-to-t from-black/60 to-transparent py-3 text-xs text-white opacity-0 group-hover:opacity-100 transition-opacity">
+                    <Maximize2 className="size-3" /> {c.kind === "board" ? "Abrir preview" : "Abrir imagem"}
                   </span>
+                </button>
+                <div className="flex flex-1 flex-col p-3">
+                  <p className="font-display font-semibold leading-tight truncate">{c.title}</p>
+                  <p className="text-[11px] text-muted-foreground mt-0.5 truncate">{c.group}</p>
+                  <div className="mt-3 flex items-center gap-2">
+                    <Button
+                      size="sm"
+                      className="h-8 flex-1 gap-1.5 bg-foreground text-background hover:bg-foreground/90"
+                      onClick={() => setUseCreative(c)}
+                    >
+                      <Megaphone className="size-3.5" /> Usar na campanha
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      className="h-8 gap-1.5"
+                      onClick={() => downloadCreative(c)}
+                      title="Baixar criativo"
+                    >
+                      <Download className="size-3.5" /> Baixar
+                    </Button>
+                  </div>
                 </div>
-              </motion.button>
+              </motion.div>
             ))}
           </div>
         )}
@@ -414,25 +422,50 @@ function CreativesPage() {
         styles={{ container: { backgroundColor: "rgba(10, 12, 20, 0.96)" } }}
       />
 
-      {/* Claude Design iframe lightbox */}
-      <Dialog open={!!claudeLightbox} onOpenChange={(o) => !o && setClaudeLightbox(null)}>
-        <DialogContent className="max-w-[96vw] w-[96vw] sm:max-w-[96vw] p-0 overflow-hidden bg-white h-[92vh] flex flex-col gap-0">
-          {claudeLightbox && (
+      {/* Claude Design iframe lightbox (boards) */}
+      <Dialog open={!!boardPreview} onOpenChange={(o) => !o && setBoardPreview(null)}>
+        <DialogContent className="max-w-[96vw] w-[96vw] sm:max-w-[96vw] p-0 overflow-hidden bg-white h-[90dvh] max-h-[90dvh] flex flex-col gap-0">
+          {boardPreview && (
             <>
-              <DialogTitle className="px-5 pt-4 pb-3 font-display text-base flex items-center gap-2 shrink-0">
-                <Sparkles className="size-4 text-violet" />
-                {claudeLightbox.title}
-                <span className="text-[10px] font-normal text-muted-foreground uppercase tracking-wider ml-1">Claude Design · ao vivo</span>
-              </DialogTitle>
-              <iframe
-                src={claudeLightbox.path}
-                title={claudeLightbox.title}
-                className="flex-1 w-full border-0"
-                style={{ background: "hsl(30 20% 88%)" }}
-              />
+              <div className="flex flex-wrap items-center gap-3 px-5 pt-4 pb-3 shrink-0">
+                <DialogTitle className="font-display text-base flex items-center gap-2">
+                  <Sparkles className="size-4 text-violet" />
+                  {boardPreview.title}
+                </DialogTitle>
+                {/* Toggle Board / Designs */}
+                <div className="inline-flex rounded-lg border border-border bg-white p-0.5 text-xs ml-auto">
+                  <button
+                    onClick={() => setBoardView("board")}
+                    className={cn(
+                      "px-3 py-1 rounded-md font-medium transition-colors",
+                      boardView === "board" ? "bg-foreground text-background" : "text-foreground/70 hover:bg-accent",
+                    )}
+                  >
+                    Board
+                  </button>
+                  <button
+                    onClick={() => setBoardView("designs")}
+                    className={cn(
+                      "px-3 py-1 rounded-md font-medium transition-colors flex items-center gap-1.5",
+                      boardView === "designs" ? "bg-foreground text-background" : "text-foreground/70 hover:bg-accent",
+                    )}
+                  >
+                    <Images className="size-3.5" /> Designs
+                  </button>
+                </div>
+              </div>
+
+              {boardView === "board" ? (
+                <ClaudeDesignPreview src={boardPreview.src} title={boardPreview.title} />
+              ) : (
+                <BoardDesignsPanel creative={boardPreview} />
+              )}
+
               <div className="px-5 py-3 border-t border-border flex justify-between items-center shrink-0">
-                <span className="text-[11px] text-muted-foreground">Renderizado em iframe a partir do projeto sincronizado.</span>
-                <a href={claudeLightbox.path} target="_blank" rel="noreferrer" className="text-xs text-violet hover:underline flex items-center gap-1.5">
+                <button onClick={() => downloadCreative(boardPreview)} className="text-xs text-violet hover:underline flex items-center gap-1.5">
+                  <Download className="size-3" /> Baixar HTML
+                </button>
+                <a href={boardPreview.src} target="_blank" rel="noreferrer" className="text-xs text-violet hover:underline flex items-center gap-1.5">
                   Abrir em nova aba <ExternalLink className="size-3" />
                 </a>
               </div>
@@ -440,6 +473,9 @@ function CreativesPage() {
           )}
         </DialogContent>
       </Dialog>
+
+      {/* Usar criativo na campanha */}
+      <UseInCampaignDialog account={activeAccount} creative={useCreative} onOpenChange={(o) => !o && setUseCreative(null)} />
 
       {/* Account / Figma management */}
       <ManageAccountsDialog
@@ -452,5 +488,106 @@ function CreativesPage() {
       />
       <AddAccountDialog open={addOpen} onOpenChange={setAddOpen} />
     </AppShell>
+  );
+}
+
+/**
+ * Anexa um criativo da galeria a uma campanha → grupo (Google) / conjunto (Meta)
+ * da conta ativa, via `store.attachCreative`. Mostra confirmação ao concluir.
+ */
+function UseInCampaignDialog({
+  account,
+  creative,
+  onOpenChange,
+}: {
+  account: AdAccount;
+  creative: Creative | null;
+  onOpenChange: (open: boolean) => void;
+}) {
+  const store = useManage();
+  const campaigns = creative ? store.getCampaigns(account) : [];
+
+  const [campaignId, setCampaignId] = useState("");
+  const [parentId, setParentId] = useState("");
+  const [done, setDone] = useState(false);
+
+  useEffect(() => {
+    setCampaignId("");
+    setParentId("");
+    setDone(false);
+  }, [creative?.id]);
+
+  const campaign = campaigns.find((c) => c.id === campaignId);
+  const isGoogle = campaign?.platform === "GOOGLE_ADS";
+  const parents = campaign ? (isGoogle ? campaign.adGroups : campaign.adSets) : [];
+  const parentLabel = isGoogle ? "Grupo de anúncios" : "Conjunto de anúncios";
+
+  function confirm() {
+    if (!creative || !campaign || !parentId) return;
+    store.attachCreative(account, campaign.id, parentId, creative);
+    setDone(true);
+  }
+
+  return (
+    <Dialog open={!!creative} onOpenChange={onOpenChange}>
+      <DialogContent className="max-w-md">
+        <DialogHeader>
+          <DialogTitle className="flex items-center gap-2 font-display">
+            <Megaphone className="size-4 text-violet" /> Usar na campanha
+          </DialogTitle>
+          <DialogDescription>
+            Anexar <strong className="text-foreground">{creative?.title}</strong> como anúncio em {account.name}.
+          </DialogDescription>
+        </DialogHeader>
+
+        {done ? (
+          <div className="py-6 text-center">
+            <div className="mx-auto flex size-12 items-center justify-center rounded-2xl bg-emerald-50 text-emerald-600">
+              <CheckCircle2 className="size-6" />
+            </div>
+            <p className="mt-3 text-sm font-medium">Criativo anexado</p>
+            <p className="mx-auto mt-1 max-w-xs text-xs text-muted-foreground">
+              "{creative?.title}" foi adicionado ao {parentLabel.toLowerCase()} de <strong className="text-foreground">{campaign?.name}</strong>.
+            </p>
+            <Button className="mt-4" onClick={() => onOpenChange(false)}>Concluir</Button>
+          </div>
+        ) : campaigns.length === 0 ? (
+          <p className="py-6 text-center text-sm text-muted-foreground">
+            Esta conta ainda não tem campanhas. Crie uma em Gestão de Campanhas primeiro.
+          </p>
+        ) : (
+          <div className="space-y-3">
+            <div className="space-y-1.5">
+              <label className="text-xs font-medium text-muted-foreground">Campanha</label>
+              <Select value={campaignId} onValueChange={(v) => { setCampaignId(v); setParentId(""); }}>
+                <SelectTrigger><SelectValue placeholder="Selecione uma campanha" /></SelectTrigger>
+                <SelectContent>
+                  {campaigns.map((c) => <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>)}
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="space-y-1.5">
+              <label className="text-xs font-medium text-muted-foreground">{parentLabel}</label>
+              <Select value={parentId} onValueChange={setParentId} disabled={!campaign}>
+                <SelectTrigger><SelectValue placeholder={campaign ? `Selecione um ${parentLabel.toLowerCase()}` : "Escolha a campanha primeiro"} /></SelectTrigger>
+                <SelectContent>
+                  {parents.map((p) => <SelectItem key={p.id} value={p.id}>{p.name}</SelectItem>)}
+                </SelectContent>
+              </Select>
+              {campaign && parents.length === 0 && (
+                <p className="text-[11px] text-amber-600">
+                  Esta campanha não tem {parentLabel.toLowerCase()}. Crie um em Gerir campanha.
+                </p>
+              )}
+            </div>
+
+            <Button className="w-full gap-1.5" disabled={!parentId} onClick={confirm}>
+              <Megaphone className="size-4" /> Anexar criativo
+            </Button>
+          </div>
+        )}
+      </DialogContent>
+    </Dialog>
   );
 }

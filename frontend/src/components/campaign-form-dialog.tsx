@@ -114,7 +114,7 @@ export function CampaignFormDialog({
 
           {isGoogle ? (
             <>
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div className="space-y-1.5">
                   <Label>Tipo de campanha</Label>
                   <Select value={googleType} onValueChange={(v) => setGoogleType(v as GoogleChannelType)}>
@@ -152,7 +152,7 @@ export function CampaignFormDialog({
                   </SelectContent>
                 </Select>
               </div>
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div className="space-y-1.5">
                   <Label>Orçamento</Label>
                   <Select value={budgetMode} onValueChange={(v) => setBudgetMode(v as MetaBudgetMode)}>

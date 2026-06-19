@@ -30,11 +30,14 @@ import {
   MoreHorizontal,
   ChevronDown,
   Layers,
+  Images,
+  ImagePlus,
 } from "lucide-react";
 import { AppShell } from "@/components/app-shell";
 import { GlassCard } from "@/components/glass-card";
 import { PlatformBadge } from "@/components/platform-badge";
 import { CampaignFormDialog } from "@/components/campaign-form-dialog";
+import { CreativePickerDialog, CreativeThumb } from "@/components/creative-picker-dialog";
 import { GeoTargeting, DemographicsEditor, InterestEditor } from "@/components/manage-targeting";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -92,6 +95,7 @@ import {
   type Campaign,
   type AdGroup,
   type AdSet,
+  type Ad,
   type MatchType,
   type Audience,
   type MetaOptimizationGoal,
@@ -100,7 +104,7 @@ import {
 export const Route = createFileRoute("/manage/$campaignId")({
   head: ({ params }) => ({
     meta: [
-      { title: `Gerir ${params.campaignId} · Fury Ads` },
+      { title: `Gerir ${params.campaignId} · Metrik` },
       { name: "description", content: "Grupos/conjuntos, palavras-chave, públicos, geolocalização e orçamento." },
     ],
   }),
@@ -459,6 +463,13 @@ function GoogleGroupCard({ account, campaign, group: g }: { account: AdAccount; 
               </TableBody>
             </Table>
           </div>
+
+          <div className="border-t border-border px-4 py-3">
+            <p className="mb-2 flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-foreground/70">
+              <Images className="size-3.5 text-violet/70" /> Anúncios
+            </p>
+            <AdsSection account={account} campaignId={campaign.id} parentId={g.id} ads={g.ads ?? []} />
+          </div>
         </div>
       )}
     </GlassCard>
@@ -608,9 +619,75 @@ function MetaSetCard({ account, campaign, set: s }: { account: AdAccount; campai
               </Table>
             </div>
           </Section>
+
+          {/* Anúncios */}
+          <Section title="Anúncios">
+            <AdsSection account={account} campaignId={campaign.id} parentId={s.id} ads={s.ads ?? []} />
+          </Section>
         </div>
       )}
     </GlassCard>
+  );
+}
+
+// ── Anúncios (criativos anexados ao grupo/conjunto) ─────────────────────────
+
+function AdsSection({ account, campaignId, parentId, ads }: { account: AdAccount; campaignId: string; parentId: string; ads: Ad[] }) {
+  const store = useManage();
+  const [pickOpen, setPickOpen] = useState(false);
+
+  return (
+    <div className="space-y-2.5">
+      <div className="flex items-center justify-between">
+        <p className="text-[11px] text-muted-foreground">{ads.length} anúncio{ads.length === 1 ? "" : "s"}</p>
+        <Button size="sm" variant="outline" className="h-8 gap-1.5" onClick={() => setPickOpen(true)}>
+          <ImagePlus className="size-3.5" /> Adicionar criativo
+        </Button>
+      </div>
+
+      {ads.length === 0 ? (
+        <p className="rounded-lg border border-dashed border-border py-4 text-center text-xs text-muted-foreground">
+          Nenhum criativo anexado. Adicione um criativo da conta para veicular neste {account.platform === "GOOGLE_ADS" ? "grupo" : "conjunto"}.
+        </p>
+      ) : (
+        <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-4">
+          {ads.map((ad) => {
+            const ast = entityStatusMeta[ad.status];
+            return (
+              <div key={ad.id} className="group relative overflow-hidden rounded-lg border border-border bg-white">
+                <div className="relative aspect-[4/3] overflow-hidden bg-muted/60">
+                  <CreativeThumb kind={ad.creativeKind} src={ad.creativeSrc} tone={ad.thumbTone} title={ad.name} />
+                  <button
+                    onClick={() => store.removeAd(account, campaignId, parentId, ad.id)}
+                    title="Remover anúncio"
+                    className="absolute right-1 top-1 flex size-6 items-center justify-center rounded-md bg-black/55 text-white opacity-0 transition-opacity hover:bg-rose-600 group-hover:opacity-100"
+                  >
+                    <Trash2 className="size-3.5" />
+                  </button>
+                </div>
+                <div className="flex items-center justify-between gap-1.5 p-2">
+                  <p className="flex-1 truncate text-[11px] font-medium">{ad.name}</p>
+                  <button
+                    onClick={() => store.toggleAdStatus(account, campaignId, parentId, ad.id)}
+                    className={cn("inline-flex shrink-0 items-center rounded border px-1.5 py-0.5 text-[10px] hover:opacity-80", ast.cls)}
+                  >
+                    <span className={cn("mr-1 size-1.5 rounded-full", ast.dot)} />
+                    {ast.label}
+                  </button>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      )}
+
+      <CreativePickerDialog
+        open={pickOpen}
+        onOpenChange={setPickOpen}
+        account={account}
+        onPick={(c) => store.attachCreative(account, campaignId, parentId, c)}
+      />
+    </div>
   );
 }
 

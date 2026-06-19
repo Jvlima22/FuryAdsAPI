@@ -47,10 +47,12 @@ document.querySelectorAll('meta[name="ext-resource-dependency"]').forEach(functi
   .vt-group { display: flex; flex-direction: column; align-items: stretch; gap: 16px; }
   .vt-group-title { font-family: 'Space Grotesk', sans-serif; font-weight: 700; font-size: 28px; color: hsl(350 55% 22%); letter-spacing: -0.01em; padding: 0 40px; }
   /* Each carousel = one horizontal, scroll-snapping track (matches Claude Design). */
-  .vt-row { display: flex; flex-wrap: nowrap; gap: 24px; align-items: flex-start; overflow-x: auto; overflow-y: hidden; scroll-snap-type: x proximity; padding: 0 40px 18px; }
-  .vt-row::-webkit-scrollbar { height: 10px; }
-  .vt-row::-webkit-scrollbar-thumb { background: rgba(0,0,0,0.22); border-radius: 8px; }
-  .vt-row::-webkit-scrollbar-track { background: transparent; }
+  /* scroll horizontal mantido, mas SEM a barra visível embaixo do carrossel */
+  .vt-row { display: flex; flex-wrap: nowrap; gap: 24px; align-items: flex-start; overflow-x: auto; overflow-y: hidden; scroll-snap-type: x proximity; padding: 0 0 18px 40px; scrollbar-width: none; -ms-overflow-style: none; }
+  /* Espaçador final: o padding-right de um scroll container flex é "comido" ao
+     rolar até o fim, cortando o último card. Um item flex vazio garante a folga. */
+  .vt-row::after { content: ""; flex: 0 0 40px; }
+  .vt-row::-webkit-scrollbar { display: none; }
   /* Native-size frame scaled down so several slides fit per track. */
   .vt-frame { width: 1080px; height: 1350px; zoom: 0.3; overflow: hidden; box-shadow: 0 12px 48px -12px rgba(0,0,0,0.25); border-radius: 8px; flex-shrink: 0; scroll-snap-align: start; }
 </style>
