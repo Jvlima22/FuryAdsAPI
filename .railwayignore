@@ -1,0 +1,11 @@
+# Só o backend (raiz) vai pro Railway. Excluímos o que não é runtime da API.
+frontend/
+docs/
+dist/
+node_modules/
+.git/
+.claude/
+*.md
+*.pdf
+.env
+.env.*
